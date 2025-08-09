@@ -1,0 +1,17 @@
+#lang racket
+(define base-loudness 0.3)
+(define ff (* base-loudness 2.83))
+(define f (* base-loudness 2))
+(define mf (* base-loudness 1.41))
+(define m (* base-loudness 1))
+(define mp (* base-loudness 0.707))
+(define p (* base-loudness 0.5))
+(define pp (* base-loudness 0.353))
+
+(provide ff)
+(provide f)
+(provide mf)
+(provide m)
+(provide mp)
+(provide p)
+(provide pp)
