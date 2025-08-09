@@ -7,6 +7,8 @@
 (require "volumn.rkt")
 (require "env.rkt")
 (provide (all-from-out "volumn.rkt"))
+(require rsound)
+(provide (all-from-out rsound))
 (provide set-current-timbre)
 (provide set-current-tempo)
 (provide set-minium-fraction)
