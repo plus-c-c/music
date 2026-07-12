@@ -1,7 +1,7 @@
 #lang racket
 
 ;; ============================================================
-;; 卡农 (Canon) — 多流同步实现
+;; Pachelbel Canon — 卡农 (所有声部同一旋律, 不同延迟)
 ;; ============================================================
 
 (require "../midi/main.rkt")
@@ -12,135 +12,123 @@
 
 (define (pause secs) (sleep secs))
 
-;; ---- Pachelbel Canon 和弦进行 (D大调) ----
-;; D - A - Bm - F#m - G - D - G - A
-(define canon-chords
-  (list (midi-chord 62 'major 2.0 80 0)   ; D
-        (midi-chord 57 'major 2.0 80 0)   ; A
-        (midi-chord 59 'minor 2.0 80 0)   ; Bm
-        (midi-chord 54 'minor 2.0 80 0)   ; F#m
-        (midi-chord 55 'major 2.0 80 0)   ; G
-        (midi-chord 62 'major 2.0 80 0)   ; D
-        (midi-chord 55 'major 2.0 80 0)   ; G
-        (midi-chord 57 'major 2.0 80 0))) ; A
+;; ============================================================
+;; Pachelbel Canon in D Major (tempo=80)
+;; ============================================================
 
-;; ---- 低音线 ----
+;; ---- 和弦: D-A-Bm-F#m-G-D-G-A (每和弦4拍, 重复2遍=32拍) ----
+(define chords
+  (append
+   (list (midi-chord 62 'major 4.0 60 0)   ; D
+         (midi-chord 57 'major 4.0 60 0)   ; A
+         (midi-chord 59 'minor 4.0 60 0)   ; Bm
+         (midi-chord 54 'minor 4.0 60 0)   ; F#m
+         (midi-chord 55 'major 4.0 60 0)   ; G
+         (midi-chord 62 'major 4.0 60 0)   ; D
+         (midi-chord 55 'major 4.0 60 0)   ; G
+         (midi-chord 57 'major 4.0 60 0))  ; A
+   (list (midi-chord 62 'major 4.0 60 0)
+         (midi-chord 57 'major 4.0 60 0)
+         (midi-chord 59 'minor 4.0 60 0)
+         (midi-chord 54 'minor 4.0 60 0)
+         (midi-chord 55 'major 4.0 60 0)
+         (midi-chord 62 'major 4.0 60 0)
+         (midi-chord 55 'major 4.0 60 0)
+         (midi-chord 57 'major 4.0 60 0))))
+
+;; ---- 低音 (每和弦一个根音, 4拍) ----
 (define bass-line
-  (list (midi-note 38 70 2.0 1)   ; D
-        (midi-note 33 70 2.0 1)   ; A
-        (midi-note 35 70 2.0 1)   ; B
-        (midi-note 30 70 2.0 1)   ; F#
-        (midi-note 31 70 2.0 1)   ; G
-        (midi-note 38 70 2.0 1)   ; D
-        (midi-note 31 70 2.0 1)   ; G
-        (midi-note 33 70 2.0 1))) ; A
+  (append
+   (list (midi-note 38 55 4.0 1) (midi-note 33 55 4.0 1)
+         (midi-note 35 55 4.0 1) (midi-note 30 55 4.0 1)
+         (midi-note 31 55 4.0 1) (midi-note 38 55 4.0 1)
+         (midi-note 31 55 4.0 1) (midi-note 33 55 4.0 1))
+   (list (midi-note 38 55 4.0 1) (midi-note 33 55 4.0 1)
+         (midi-note 35 55 4.0 1) (midi-note 30 55 4.0 1)
+         (midi-note 31 55 4.0 1) (midi-note 38 55 4.0 1)
+         (midi-note 31 55 4.0 1) (midi-note 33 55 4.0 1))))
 
-;; ---- 旋律 1: 主题 (高音) ----
-(define melody1
-  (list (midi-note 74 90 1.0 0)   ; D5
-        (midi-note 73 85 0.5 0)   ; C#5
-        (midi-note 74 90 0.5 0)   ; D5
-        (midi-note 76 90 1.0 0)   ; E5
-        (midi-note 74 85 0.5 0)   ; D5
-        (midi-note 73 85 0.5 0)   ; C#5
-        (midi-note 71 90 1.0 0)   ; B4
-        (midi-note 69 85 0.5 0)   ; A4
-        (midi-note 71 85 0.5 0)   ; B4
-        (midi-note 73 90 1.0 0)   ; C#5
-        (midi-note 71 85 0.5 0)   ; B4
-        (midi-note 69 85 0.5 0)   ; A4
-        (midi-note 67 90 1.0 0)   ; G4
-        (midi-note 66 85 0.5 0)   ; F#4
-        (midi-note 67 85 0.5 0)   ; G4
-        (midi-note 69 90 1.0 0)   ; A4
-        (midi-note 67 85 0.5 0)   ; G4
-        (midi-note 66 85 0.5 0)   ; F#4
-        (midi-note 64 90 1.0 0)   ; E4
-        (midi-note 62 85 0.5 0)   ; D4
-        (midi-note 64 85 0.5 0)   ; E4
-        (midi-note 66 90 1.0 0)   ; F#4
-        (midi-note 64 85 0.5 0)   ; E4
-        (midi-note 62 85 0.5 0))) ; D4
+;; ---- Canon 旋律 (每小节4拍, 8小节=32拍, 重复2遍) ----
+(define canon-melody
+  (append
+   (list
+    ;; 小节1 (D): F#5(1.5)-E5(0.5)-D5(1)-C#5(1)
+    (midi-note 78 80 1.5 0) (midi-note 76 75 0.5 0)
+    (midi-note 74 80 1.0 0) (midi-note 73 75 1.0 0)
+    ;; 小节2 (A): B4(1.5)-A4(0.5)-B4(1)-C#5(1)
+    (midi-note 71 80 1.5 0) (midi-note 69 75 0.5 0)
+    (midi-note 71 80 1.0 0) (midi-note 73 80 1.0 0)
+    ;; 小节3 (Bm): D5(1.5)-C#5(0.5)-B4(1)-A4(1)
+    (midi-note 74 80 1.5 0) (midi-note 73 75 0.5 0)
+    (midi-note 71 80 1.0 0) (midi-note 69 75 1.0 0)
+    ;; 小节4 (F#m): G4(1.5)-F#4(0.5)-G4(1)-A4(1)
+    (midi-note 67 80 1.5 0) (midi-note 66 75 0.5 0)
+    (midi-note 67 80 1.0 0) (midi-note 69 80 1.0 0))
+   (list
+    ;; 小节5 (G): B4(1.5)-A4(0.5)-B4(1)-C#5(1)
+    (midi-note 71 80 1.5 0) (midi-note 69 75 0.5 0)
+    (midi-note 71 80 1.0 0) (midi-note 73 80 1.0 0)
+    ;; 小节6 (D): D5(1.5)-C#5(0.5)-B4(1)-A4(1)
+    (midi-note 74 80 1.5 0) (midi-note 73 75 0.5 0)
+    (midi-note 71 80 1.0 0) (midi-note 69 75 1.0 0)
+    ;; 小节7 (G): G4(1.5)-F#4(0.5)-E4(1)-D4(1)
+    (midi-note 67 80 1.5 0) (midi-note 66 75 0.5 0)
+    (midi-note 64 80 1.0 0) (midi-note 62 75 1.0 0)
+    ;; 小节8 (A): E4(1.5)-D4(0.5)-E4(1)-F#4(1)
+    (midi-note 64 80 1.5 0) (midi-note 62 75 0.5 0)
+    (midi-note 64 80 1.0 0) (midi-note 66 80 1.0 0))))
 
-;; ---- 旋律 2: 变奏 (高音) ----
-(define melody2
-  (list (midi-note 81 85 0.5 0)   ; A5
-        (midi-note 79 80 0.5 0)   ; G5
-        (midi-note 78 85 0.5 0)   ; F#5
-        (midi-note 76 80 0.5 0)   ; E5
-        (midi-note 74 85 0.5 0)   ; D5
-        (midi-note 73 80 0.5 0)   ; C#5
-        (midi-note 74 85 0.5 0)   ; D5
-        (midi-note 76 85 0.5 0)   ; E5
-        (midi-note 78 85 0.5 0)   ; F#5
-        (midi-note 76 80 0.5 0)   ; E5
-        (midi-note 74 85 0.5 0)   ; D5
-        (midi-note 73 80 0.5 0)   ; C#5
-        (midi-note 71 85 0.5 0)   ; B4
-        (midi-note 69 80 0.5 0)   ; A4
-        (midi-note 71 85 0.5 0)   ; B4
-        (midi-note 73 85 0.5 0)   ; C#5
-        (midi-note 74 85 0.5 0)   ; D5
-        (midi-note 76 80 0.5 0)   ; E5
-        (midi-note 78 85 0.5 0)   ; F#5
-        (midi-note 76 80 0.5 0)   ; E5
-        (midi-note 74 85 0.5 0)   ; D5
-        (midi-note 73 80 0.5 0)   ; C#5
-        (midi-note 71 85 0.5 0)   ; B4
-        (midi-note 69 85 0.5 0))) ; A4
+;; ============================================================
+;; 创建 stream
+;; ============================================================
 
-;; ---- 创建 stream ----
-(define chord-stream (new music-stream% [tempo 100] [channel 0]))
-(define bass-stream  (new music-stream% [tempo 100] [channel 1]))
-(define voice1       (new music-stream% [tempo 100] [channel 2]))
-(define voice2       (new music-stream% [tempo 100] [channel 3]))
-(define voice3       (new music-stream% [tempo 100] [channel 4]))
+(define chord-s (new music-stream% [tempo 80] [channel 0]))
+(define bass-s  (new music-stream% [tempo 80] [channel 1]))
+(define v1      (new music-stream% [tempo 80] [channel 2]))
+(define v2      (new music-stream% [tempo 80] [channel 3]))
+(define v3      (new music-stream% [tempo 80] [channel 4]))
 
-;; ---- 启动和弦流 (基础) ----
-(printf "=== Pachelbel Canon (卡农) ===~n~n")
-(define chord-end (send chord-stream start dev
-                        (append canon-chords canon-chords)))
-(printf "[和弦] D-A-Bm-F#m-G-D-G-A ×2~n")
+;; ---- 启动 ----
 
-;; ---- 启动低音流 (同步到和弦) ----
-(send bass-stream start dev
-      (append bass-line bass-line)
-      #:from chord-stream #:at-beat 0.0)
+(printf "=== Pachelbel Canon in D (tempo=80) ===~n~n")
+
+;; 和弦: 基础
+(send chord-s start dev chords)
+(printf "[和弦] D-A-Bm-F#m-G-D-G-A ×2 (32拍)~n")
+
+;; 低音: 同步
+(send bass-s start dev bass-line
+      #:from chord-s #:at-beat 0.0)
 (printf "[低音] 同步到和弦~n")
 
-;; ---- 声部1: 主题 (延迟2拍) ----
-(send voice1 start dev melody1
-      #:from chord-stream #:at-beat 2.0)
-(printf "[声部1] 主题 (延迟2拍)~n")
+;; 声部1: 旋律 (延迟4拍 = 1小节)
+(send v1 start dev (append canon-melody canon-melody)
+      #:from chord-s #:at-beat 4.0)
+(printf "[声部1] 旋律 (延迟1小节)~n")
 
-;; ---- 声部2: 主题重复 (延迟4拍) ----
-(send voice2 start dev melody1
-      #:from chord-stream #:at-beat 4.0)
-(printf "[声部2] 主题重复 (延迟4拍)~n")
+;; 声部2: 同一旋律 (延迟8拍 = 2小节)
+(send v2 start dev (append canon-melody canon-melody)
+      #:from chord-s #:at-beat 8.0)
+(printf "[声部2] 旋律 (延迟2小节)~n")
 
-;; ---- 声部3: 变奏 (延迟6拍) ----
-(send voice3 start dev melody2
-      #:from chord-stream #:at-beat 6.0)
-(printf "[声部3] 变奏 (延迟6拍)~n")
+;; 声部3: 同一旋律 (延迟12拍 = 3小节)
+(send v3 start dev (append canon-melody canon-melody)
+      #:from chord-s #:at-beat 12.0)
+(printf "[声部3] 旋律 (延迟3小节)~n")
 
-;; ---- 等待结束 ----
+;; ---- 等待播放 ----
 (printf "~n播放中...~n")
-(sleep 5.0)
-(printf "  [拍 ~a] 声部2加入...~n" (~r (send chord-stream current-beat) #:precision 1))
 
-(sleep 5.0)
-(printf "  [拍 ~a] 声部3加入...~n" (~r (send chord-stream current-beat) #:precision 1))
+(for ([t '(8 16 24 32)])
+  (pause 6.0)
+  (printf "  [拍 ~a]~n" (~r (send chord-s current-beat) #:precision 1)))
 
-(sleep 15.0)
-(printf "  [拍 ~a] 播放结束~n" (~r (send chord-stream current-beat) #:precision 1))
+(pause 2.0)
 
 ;; ---- 停止 ----
-(send chord-stream stop)
-(send bass-stream stop)
-(send voice1 stop)
-(send voice2 stop)
-(send voice3 stop)
+(for ([s (list chord-s bass-s v1 v2 v3)])
+  (send s stop))
 
 (pause 0.5)
 (send dev close)
-(printf "~n卡农播放完毕。~n")
+(printf "~n播放完毕。~n")
