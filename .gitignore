@@ -1,0 +1,4 @@
+# Build artifacts
+*.mid
+*.o
+*.so
