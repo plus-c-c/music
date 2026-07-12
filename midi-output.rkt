@@ -5,12 +5,24 @@
 
 ;; MIDI 实时输出模块 (基于本地 rtmidi FFI wrapper)
 
+;; 查找合成器端口 (优先 FluidSynth, 否则第一个非Midi Through端口)
+(define (find-synth-port)
+  (define ports (list-midi-out-ports))
+  (define (synth? name)
+    (regexp-match #rx"[Ff][Ll][Uu][Ii][Dd]|[Ss][Yy][Nn][Tt][Hh]|[Gg][Mm]|[Gg][Ss]|[Xx][Gg]" name))
+  (define (through? name)
+    (regexp-match #rx"[Mm]idi [Tt]hrough" name))
+  (cond
+    [(for/first ([p ports] #:when (synth? (cdr p))) (car p))]
+    [(for/first ([p ports] #:when (not (through? (cdr p)))) (car p))]
+    [else 0]))
+
 (define midi-output%
   (class object%
     (super-new)
     (init-field
      [channel 0]
-     [port-idx 0]
+     [port-idx #f]    ; #f = 自动检测合成器端口
      [device-name "Music DSL"])
 
     (field [rtmidi-out #f]
@@ -23,10 +35,11 @@
                                           "无法打开 MIDI 输出: ~a"
                                           (exn-message e)))])
         (set! rtmidi-out (new rtmidi-out%))
-        (send rtmidi-out open port-idx device-name)
+        (define idx (if port-idx port-idx (find-synth-port)))
+        (send rtmidi-out open idx device-name)
         (set! is-open? #t)
         (printf "已打开 MIDI 端口: ~a~n"
-                (cdr (list-ref (send rtmidi-out list-ports) port-idx)))))
+                (cdr (list-ref (send rtmidi-out list-ports) idx)))))
 
     (define/public (close)
       (when (and rtmidi-out is-open?)
@@ -90,7 +103,7 @@
   (max min-val (min max-val val)))
 
 ;; 便捷构造函数
-(define (make-midi-output [ch 0] [port 0])
+(define (make-midi-output [ch 0] [port #f])
   (new midi-output% [channel ch] [port-idx port]))
 
 ;; 列出端口
