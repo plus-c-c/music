@@ -1,0 +1,12 @@
+{
+  "title": "iGEM 2026 voice-loop level comparison",
+  "voice_mp4": "/home/cjc/Downloads/PV/test-sound.mp4",
+  "voice_wav": "/home/cjc/Downloads/iGEM 配乐/presentation/test-sound.wav",
+  "background_wav": "/home/cjc/Downloads/iGEM 配乐/presentation/igem-presentation-background-15min.wav",
+  "out_dir": "/home/cjc/Downloads/iGEM 配乐/presentation",
+  "duration_s": 900.0,
+  "background_gain_db": 6.0,
+  "voice_gain_db": 0.0,
+  "voice_loop_crossfade_ms": 100.0,
+  "mix_peak_dbfs": -1.0
+}

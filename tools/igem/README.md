@@ -52,6 +52,7 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `presentation_mix.py`：把选定的循环扩展成 15 分钟演示音轨。
 - `presentation_background.py`：严格拍点循环、段落留空隙、按旁白音量校准的背景版。
 - `presentation_voice_loop.py`：把测试人声循环到 15 分钟，生成人声/背景/混合三个音量对照版本。
+- `render-presentation.sh`：一键重建背景和 15 分钟人声循环对照版。
 - `transcribe.sh`：上传 MP3 到远程，多进程并行转录，下载 MIDI。
 - `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
 - `aria-amt-cpu.patch`：Aria-AMT CPU 补丁。
@@ -59,6 +60,7 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `presets/igem-2026-candidates.json`：`detect` 生成的候选列表，供替换主候选时参考。
 - `presets/presentation-2026.json`：15 分钟演示音轨的分段、循环和音色配置。
 - `presets/presentation-background-2026.json`：严格循环背景版的重复次数、空隙和电平配置。
+- `presets/presentation-voice-loop-2026.json`：人声循环时长、背景增益、循环淡化和混合限幅配置。
 - `requirements.txt`：本地 Python 依赖。
 
 ## 1. 远程转录
@@ -291,6 +293,15 @@ presentation/presentation-background-cues.json
 ```bash
 python3 tools/igem/presentation_voice_loop.py --background-gain-db 6
 ```
+
+一键重建当前背景和对照版：
+
+```bash
+tools/igem/render-presentation.sh
+```
+
+`presentation_voice_loop.py` 在 `test-sound.wav` 不存在时，会自动从
+`presets/presentation-voice-loop-2026.json` 中的 `voice_mp4` 提取。
 
 输出：
 
