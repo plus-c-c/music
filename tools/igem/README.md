@@ -49,11 +49,13 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 ## 文件
 
 - `igem_music.py`：音量、循环检测、循环渲染、播放。
+- `presentation_mix.py`：把选定的循环扩展成 15 分钟演示音轨。
 - `transcribe.sh`：上传 MP3 到远程，多进程并行转录，下载 MIDI。
 - `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
 - `aria-amt-cpu.patch`：Aria-AMT CPU 补丁。
 - `presets/igem-2026.json`：本次五首曲子的主循环选择。
 - `presets/igem-2026-candidates.json`：`detect` 生成的候选列表，供替换主候选时参考。
+- `presets/presentation-2026.json`：15 分钟演示音轨的分段、循环和音色配置。
 - `requirements.txt`：本地 Python 依赖。
 
 ## 1. 远程转录
@@ -206,3 +208,38 @@ python3 tools/igem/igem_music.py play --mode normalized --list
 Aria-AMT 是钢琴转录模型。完整混音会主要保留模型识别出的钢琴/键盘部分，不等同于完整编曲分轨。
 
 循环候选的“小节”按 4/4 处理；如果原曲存在变速、弱起或不规则拍号，预设中的时间点应人工复核。
+
+
+## 6. 15 分钟演示音轨
+
+`presentation_mix.py` 会按配置把每个段落的循环扩展到指定长度，再用 2 秒等功率交叉淡化连接各段。
+
+```bash
+python3 tools/igem/presentation_mix.py
+```
+
+输出：
+
+```text
+/home/cjc/Downloads/iGEM 配乐/presentation/
+├── igem-presentation-15min.wav
+├── igem-presentation-15min.mp3
+└── presentation-cues.json
+```
+
+当前分段：
+
+| 段落 | 时间 | 长度 | 来源 | 循环 |
+|---|---:|---:|---|---|
+| 背景+HP | 0:00–2:20 | 140s | 开头 | 31.277–50.480 |
+| SEED 1 | 2:20–4:30 | 130s | NEST开始后 | 44.072–56.866 |
+| SEED 2 | 4:30–6:40 | 130s | 2 | 43.886–64.459 |
+| SEED 3 | 6:40–9:40 | 180s | 3 | 61.974–76.115 |
+| 硬件 | 9:40–12:20 | 160s | 2 | 50.294–60.581 |
+| 创业 | 12:20–15:00 | 160s | 结尾 | 54.846–74.048 |
+
+音色处理：
+
+- `calm`：低通 9 kHz + 高通 30 Hz，略降电平；
+- `hard`：高通 45 Hz + 3:1 压缩，保持瞬态；
+- `distant`：低通 4.2 kHz + 短回声，电平更低。

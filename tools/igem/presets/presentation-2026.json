@@ -1,0 +1,68 @@
+{
+  "title": "iGEM 2026 presentation soundtrack",
+  "target_dbfs": -2.0,
+  "section_crossfade_s": 2.0,
+  "loop_seam_ms": 120,
+  "sections": [
+    {
+      "name": "背景+HP",
+      "duration_s": 140,
+      "source": "开头",
+      "loop_start_s": 31.277,
+      "loop_end_s": 50.48,
+      "tone": "calm",
+      "note": "发现问题、调研、SEED 人类实践概念；平缓",
+      "rms_dbfs": -22.0
+    },
+    {
+      "name": "SEED 1",
+      "duration_s": 130,
+      "source": "NEST开始后",
+      "loop_start_s": 44.072,
+      "loop_end_s": 56.866,
+      "tone": "calm",
+      "note": "SELP 可调节；冷静",
+      "rms_dbfs": -22.0
+    },
+    {
+      "name": "SEED 2",
+      "duration_s": 130,
+      "source": "2",
+      "loop_start_s": 43.886,
+      "loop_end_s": 64.459,
+      "tone": "calm",
+      "note": "接头、可编程模块化；冷静",
+      "rms_dbfs": -22.0
+    },
+    {
+      "name": "SEED 3",
+      "duration_s": 180,
+      "source": "3",
+      "loop_start_s": 61.974,
+      "loop_end_s": 76.115,
+      "tone": "calm",
+      "note": "三循环：CPC、MNPs、脂质体；冷静",
+      "rms_dbfs": -22.0
+    },
+    {
+      "name": "硬件",
+      "duration_s": 160,
+      "source": "2",
+      "loop_start_s": 50.294,
+      "loop_end_s": 60.581,
+      "tone": "hard",
+      "note": "方便医生使用的硬件；硬",
+      "rms_dbfs": -20.0
+    },
+    {
+      "name": "创业",
+      "duration_s": 160,
+      "source": "结尾",
+      "loop_start_s": 54.846,
+      "loop_end_s": 74.048,
+      "tone": "distant",
+      "note": "NexCode Bio 创业设想；遥远",
+      "rms_dbfs": -26.0
+    }
+  ]
+}
