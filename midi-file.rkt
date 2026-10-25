@@ -17,9 +17,13 @@
      [current-track '()]) ; 当前轨道事件
 
     ;; 添加事件到当前轨道
+    ;; byte2 为 #f 时写成 2 字节消息（如 Program Change / 部分 Meta 事件）
     (define/public (add-event delta-time status byte1 [byte2 #f])
+      (define data (if byte2
+                       (list status byte1 byte2)
+                       (list status byte1)))
       (set! current-track
-            (cons (list delta-time status byte1 byte2) current-track)))
+            (cons (cons delta-time data) current-track)))
 
     ;; 添加音符事件
     (define/public (add-note pitch velocity duration-ticks [ch 0])

@@ -11,6 +11,18 @@
 (require "midi-output.rkt")
 (require "midi-file.rkt")
 (require "midi-dynamics.rkt")
+(require "midi-score.rkt")
+(require "midi-dsl.rkt")
+
+;; DAW 功能模块
+(require "mixer.rkt")
+(require "effects.rkt")
+(require "transport.rkt")
+(require "metronome.rkt")
+(require "session.rkt")
+(require "automation.rkt")
+(require "quantize.rkt")
+(require "export.rkt")
 
 ;; 旧模块 (保留用于向后兼容)
 (require "volumn.rkt")
@@ -22,13 +34,45 @@
 (provide tom-high tom-mid tom-low crash ride cowbell tambourine)
 (provide make-midi-output make-midi-file)
 (provide midi-play midi-write midi-sequence)
-(provide open-midi-ports rtmidi-available?)
+(provide open-midi-ports)
 (provide crescendo decrescendo crescendo-decrescendo)
 (provide constant-velocity accent diminuendo)
 (provide sforzando apply-dynamic dynamics)
 
 ;; 导出旧的音量常量
 (provide (all-from-out "volumn.rkt"))
+
+;; 导出 DAW 功能模块
+(provide mixer% mixer-track% mixer-bus% mixer-vca%
+         make-mixer make-track make-bus)
+(provide effect% reverb% delay% eq% compressor% limiter%
+         gain% pan-effect% gate% distortion% chorus%
+         make-effect-chain process-midi-effects)
+(provide transport% make-transport)
+(provide metronome% make-metronome)
+(provide session% make-session session-save session-load)
+(provide automation% automation-point% make-automation
+         add-point get-value-at)
+(provide quantize swing humanize velocity-quantize
+         make-quantize-params quantize-grid swing-grid)
+(provide export-options% export-midi export-mixdown
+         export-selected-tracks export-stems)
+(provide midi-event midi-event? midi-event-start midi-event-duration
+         midi-event-pitch midi-event-velocity midi-event-channel midi-event-kind
+         voice voice? voice-name voice-items
+         expanded-voice expanded-voice? expanded-voice-name expanded-voice-items
+         timed-item timed-item? timed-item-start timed-item-duration timed-item-object
+         midi-rest midi-rest?
+         midi-cluster midi-cluster?
+         note-value beats->note-value whole half quarter eighth sixteenth thirty-second
+         note chord chord-of rest pedal perc tie
+         tie-start tie-end tie-continue
+         part score
+         expand-voice expand-music expand-score expand-voices
+         voice-events expanded-voice-events score-events chord-notes
+         timed-item->pedal-events voice-pedals score-pedals
+         play-events play-score play-expanded-voice play-voice
+         current-playback-backend current-playback-tempo current-soundfont)
 
 ;; 全局 MIDI 输出
 (define current-midi-output #f)

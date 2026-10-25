@@ -12,6 +12,8 @@
 ;;   Dynamics — 力度控制 (crescendo, decrescendo, ...)
 ;;   File     — MIDI 文件写入 (make-midi-file, save)
 ;;   Output   — 实时 MIDI 输出 (make-midi-output, open)
+;;   Score    — 内部结构展开 (expand-music, expand-voices, midi-rest)
+;;   Loop     — 循环展开与循环播放 (loop-events, loop-score, play-loop)
 ;;   Stream   — 节拍精确播放流 (music-stream%)
 ;;   Ports    — 端口枚举 (list-midi-out-ports)
 ;;
@@ -24,8 +26,19 @@
          "../midi-dynamics.rkt"
          "../midi-file.rkt"
          "../midi-output.rkt"
+         "../midi-score.rkt"
+         "../midi-loop.rkt"
+         "../midi-dsl.rkt"
          "../music-stream.rkt"
-         "../utils/rtmidi.rkt")
+         "../utils/rtmidi.rkt"
+         "../mixer.rkt"
+         "../effects.rkt"
+         "../transport.rkt"
+         "../metronome.rkt"
+         "../session.rkt"
+         "../automation.rkt"
+         "../quantize.rkt"
+         "../export.rkt")
 
 ;; ============================================================
 ;; Note — 音符
@@ -194,3 +207,161 @@
 
 ;; ---- 辅助: 便捷的通道常量 ----
 (define channel-9 9)
+
+;; ============================================================
+;; Mixer — 混音台
+;; ============================================================
+(provide
+ ;; 类
+ mixer% mixer-track% mixer-bus% mixer-vca%
+
+ ;; 构造函数
+ make-mixer make-track make-bus)
+
+;; ============================================================
+;; Effects — 效果器
+;; ============================================================
+(provide
+ ;; 基类
+ effect%
+
+ ;; 内置效果器
+ reverb% delay% eq% compressor% limiter%
+ gain% pan-effect% gate% distortion% chorus%
+
+ ;; 效果链
+ make-effect-chain process-midi-effects)
+
+;; ============================================================
+;; Transport — 传输控制
+;; ============================================================
+(provide
+ ;; 类
+ transport%
+
+ ;; 构造函数
+ make-transport)
+
+;; ============================================================
+;; Metronome — 节拍器
+;; ============================================================
+(provide
+ ;; 类
+ metronome%
+
+ ;; 构造函数
+ make-metronome)
+
+;; ============================================================
+;; Session — 会话管理
+;; ============================================================
+(provide
+ ;; 类
+ session%
+
+ ;; 构造函数
+ make-session
+
+ ;; 文件操作
+ session-save session-load)
+
+;; ============================================================
+;; Automation — 参数自动化
+;; ============================================================
+(provide
+ ;; 类
+ automation% automation-point%
+
+ ;; 构造函数
+ make-automation
+
+ ;; 操作
+ add-point get-value-at
+
+ ;; 插值函数
+ linear-interpolate step-interpolate curve-interpolate)
+
+;; ============================================================
+;; Quantize — 量化
+;; ============================================================
+(provide
+ ;; 核心函数
+ quantize swing humanize velocity-quantize
+
+ ;; 参数构造
+ make-quantize-params
+
+ ;; 预设网格
+ quantize-grid swing-grid)
+
+;; ============================================================
+;; Export — 导出
+;; ============================================================
+(provide
+ ;; 导出选项
+ export-options%
+
+ ;; 导出函数
+ export-midi export-mixdown
+ export-selected-tracks export-stems)
+
+;; ============================================================
+;; Score — 内部结构展开
+;; ============================================================
+(provide midi-event
+         midi-event?
+         midi-event-start
+         midi-event-duration
+         midi-event-pitch
+         midi-event-velocity
+         midi-event-channel
+         midi-event-kind
+         voice voice? voice-name voice-items
+         expanded-voice expanded-voice?
+         expanded-voice-name expanded-voice-items
+         timed-item timed-item?
+         timed-item-start timed-item-duration timed-item-object
+         score-measure score-measure? score-measure-number score-measure-items measure
+         pedal-event pedal-event? pedal-event-start pedal-event-duration
+         pedal-event-value pedal-event-channel
+         pedal midi-pedal?
+         tie-start tie-end tie-continue
+         tie-item? tie-base tie-item-from? tie-item-to?
+         midi-rest midi-rest?
+         midi-cluster midi-cluster?
+         note-value
+         beats->note-value
+         whole half quarter eighth sixteenth thirty-second
+         note chord chord-of rest perc tie
+         part score n c r
+         expand-voice
+         expand-music
+         expand-score
+         expand-voices
+         voice-events
+         expanded-voice-events
+         expanded-voice-pedals
+         score-events
+         chord-notes
+         timed-item->pedal-events
+         voice-pedals
+         score-pedals
+         loop-segment
+         loop-segment?
+         loop-segment-events
+         loop-segment-pedals
+         loop-segment-start
+         loop-segment-end
+         empty-loop-segment
+         loop-segment-hold-pedal
+         loop-events
+         loop-score
+         play-loop
+         merge-pedal-events
+         play-events
+         play-score
+         play-expanded-voice
+         play-voice
+         current-playback-backend
+         current-playback-tempo
+         current-soundfont)

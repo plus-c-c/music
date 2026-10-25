@@ -2,3 +2,23 @@
 *.mid
 *.o
 *.so
+
+# Racket compiled output
+*.zo
+*.dep
+compiled/
+**/compiled/
+
+# Generated audio
+*.wav
+
+# Sound library downloads
+sounds/sf2/*.sf2
+sounds/sf2/*.sf3
+sounds/sfz/sonatina-orchestra/
+sounds/sfz/virtual-playing-orchestra/
+sounds/sfz/band-instruments/
+sounds/ardour-presets/*.fxp
+sounds/samples/*.wav
+sounds/samples/*.mp3
+sounds/samples/*.flac

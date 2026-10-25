@@ -223,12 +223,17 @@
 
 ;; 变长数量编码 (VLQ)
 (define (encode-vlq value)
-  (let loop ([val value]
-             [result '()])
-    (if (< val #x80)
-        (bytes->immutable-bytes (list->bytes (reverse (cons val result))))
-        (loop (arithmetic-shift val -7)
-              (cons (bitwise-ior #x80 (bitwise-and val #x7f)) result)))))
+  (define (groups v)
+    (if (< v #x80)
+        (list v)
+        (append (groups (arithmetic-shift v -7))
+                (list (bitwise-and v #x7f)))))
+  (define gs (groups value))
+  (bytes->immutable-bytes
+   (list->bytes
+    (append (for/list ([g (drop-right gs 1)])
+              (bitwise-ior #x80 g))
+            (list (last gs))))))
 
 ;; 变长数量解码
 (define (decode-vlq port)
