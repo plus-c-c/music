@@ -1,5 +1,13 @@
 # iGEM 配乐工作流
 
+## 文档索引
+
+- [配乐结构与循环思路](docs/arrangement.md)
+- [人声与背景响度](docs/loudness.md)
+- [工作流与脚本](docs/workflow.md)
+- [当前输出清单](docs/outputs.md)
+- [当前响度表快照](docs/current-loudness-report.md)
+
 这套脚本固化当前的 iGEM 配乐处理流程：
 
 1. 在远程 `iGEMServer` 上并行运行 Aria-AMT；
@@ -21,7 +29,7 @@
 安装 Python 依赖：
 
 ```bash
-python3 -m pip install -r tools/igem/requirements.txt
+python3 -m pip install -r projects/igem-pv/requirements.txt
 ```
 
 远程 Aria-AMT 需要：
@@ -36,7 +44,7 @@ python3 -m pip install -r tools/igem/requirements.txt
 ```bash
 cd /path/to/aria-amt
 git checkout a1ab73f
-git apply /path/to/tools/igem/aria-amt-cpu.patch
+git apply /path/to/projects/igem-pv/aria-amt-cpu.patch
 ```
 
 如果远程环境尚无模型权重：
@@ -53,6 +61,7 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `presentation_background.py`：严格拍点循环、段落留空隙、按旁白音量校准的背景版。
 - `presentation_voice_loop.py`：把测试人声循环到 15 分钟，生成人声/背景/混合三个音量对照版本。
 - `render-presentation.sh`：一键重建背景和 15 分钟人声循环对照版。
+- `play-full-mix.sh`：播放完整 15 分钟背景 + 人声混合版。
 - `presentation_isolate.py`：单独导出硬件段背景和人声参考，便于 A/B。
 - `transcribe.sh`：上传 MP3 到远程，多进程并行转录，下载 MIDI。
 - `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
@@ -68,7 +77,7 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 
 ```bash
 cd /home/cjc/Repository/music
-tools/igem/transcribe.sh
+projects/igem-pv/transcribe.sh
 ```
 
 默认：
@@ -81,7 +90,7 @@ tools/igem/transcribe.sh
 常用参数：
 
 ```bash
-tools/igem/transcribe.sh \
+projects/igem-pv/transcribe.sh \
   --audio-dir "/home/cjc/Downloads/iGEM 配乐" \
   --midi-dir "/home/cjc/Downloads/iGEM 配乐/aria-amt-midi" \
   --threads 3 \
@@ -94,7 +103,7 @@ tools/igem/transcribe.sh \
 ## 2. 统一峰值音量
 
 ```bash
-python3 tools/igem/igem_music.py normalize
+python3 projects/igem-pv/igem_music.py normalize
 ```
 
 输出 `loop-preview/gains.json`，其中包含：
@@ -116,7 +125,7 @@ python3 tools/igem/igem_music.py normalize
 ## 3. 检测循环候选
 
 ```bash
-python3 tools/igem/igem_music.py detect
+python3 projects/igem-pv/igem_music.py detect
 ```
 
 默认输出 `loop-preview/candidates.json`；仓库内保留了本次的
@@ -130,7 +139,7 @@ python3 tools/igem/igem_music.py detect
 默认搜索 4 小节和 8 小节候选，仅在曲目中段选择。当前预设文件是：
 
 ```text
-tools/igem/presets/igem-2026.json
+projects/igem-pv/presets/igem-2026.json
 ```
 
 每首本次只选用一个主候选；其他候选可以手动替换到该文件。
@@ -138,7 +147,7 @@ tools/igem/presets/igem-2026.json
 ## 4. 渲染循环预览
 
 ```bash
-python3 tools/igem/igem_music.py render
+python3 projects/igem-pv/igem_music.py render
 ```
 
 输出：
@@ -179,32 +188,32 @@ python3 tools/igem/igem_music.py render
 播放循环预览：
 
 ```bash
-python3 tools/igem/igem_music.py play --mode loops
+python3 projects/igem-pv/igem_music.py play --mode loops
 ```
 
 后台播放：
 
 ```bash
-python3 tools/igem/igem_music.py play --mode loops --background
+python3 projects/igem-pv/igem_music.py play --mode loops --background
 ```
 
 其他模式：
 
 ```bash
 # MIDI 与 MP3 交替：MIDI 开头 → MP3 开头 → MIDI NEST → ...
-python3 tools/igem/igem_music.py play --mode normalized
+python3 projects/igem-pv/igem_music.py play --mode normalized
 
 # 只播原始 MP3
-python3 tools/igem/igem_music.py play --mode originals
+python3 projects/igem-pv/igem_music.py play --mode originals
 
 # 只播 MIDI，使用 gains.json 中的 MIDI gain
-python3 tools/igem/igem_music.py play --mode midi
+python3 projects/igem-pv/igem_music.py play --mode midi
 ```
 
 `--list` 只打印将要执行的命令，不发声：
 
 ```bash
-python3 tools/igem/igem_music.py play --mode normalized --list
+python3 projects/igem-pv/igem_music.py play --mode normalized --list
 ```
 
 播放脚本和日志会写入 `loop-preview/play-<mode>.sh` 与 `.log`。
@@ -221,7 +230,7 @@ Aria-AMT 是钢琴转录模型。完整混音会主要保留模型识别出的�
 `presentation_mix.py` 会按配置把每个段落的循环扩展到指定长度，再用 2 秒等功率交叉淡化连接各段。
 
 ```bash
-python3 tools/igem/presentation_mix.py
+python3 projects/igem-pv/presentation_mix.py
 ```
 
 输出：
@@ -256,7 +265,7 @@ python3 tools/igem/presentation_mix.py
 先从测试旁白中提取音频并测量整体响度：
 
 ```bash
-python3 tools/igem/presentation_background.py
+python3 projects/igem-pv/presentation_background.py
 ```
 
 当前参考：
@@ -306,13 +315,13 @@ presentation/presentation-background-cues.json
 命令：
 
 ```bash
-python3 tools/igem/presentation_voice_loop.py --background-gain-db 10
+python3 projects/igem-pv/presentation_voice_loop.py --background-gain-db 10
 ```
 
 一键重建当前背景和对照版：
 
 ```bash
-tools/igem/render-presentation.sh
+projects/igem-pv/render-presentation.sh
 ```
 
 `presentation_voice_loop.py` 在 `test-sound.wav` 不存在时，会自动从
@@ -336,14 +345,14 @@ presentation/presentation-voice-loop-levels.json
 如果人声仍然偏大，可以继续：
 
 ```bash
-python3 tools/igem/presentation_voice_loop.py --background-gain-db 12
+python3 projects/igem-pv/presentation_voice_loop.py --background-gain-db 12
 ```
 
 
 ## 9. 硬件背景与人声同时播放
 
 ```bash
-python3 tools/igem/presentation_isolate.py --play
+python3 projects/igem-pv/presentation_isolate.py --play
 ```
 
 输出：
@@ -378,7 +387,7 @@ presentation/presentation-isolated-parts.json
 命令：
 
 ```bash
-python3 tools/igem/presentation_loudness.py
+python3 projects/igem-pv/presentation_loudness.py
 ```
 
 计算内容：
