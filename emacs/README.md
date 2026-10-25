@@ -78,7 +78,7 @@ M-x racket-scratch          新建一个通用 Racket scratch + 独立 REPL
 C-u M-x racket-scratch      新建时询问任意 #lang
 C-c C-n                     在 racket-mode 中创建通用 scratch（绑定于 config-racket）
 C-c C-c                     运行 scratch
-C-j                         执行前一个 sexp 并把结果写回 buffer
+C-j                         普通表达式回写结果；void 留空行；require/define 提交到 REPL
 C-c C-r                     发送 region
 C-c C-z                     切换到该 scratch 的 REPL
 C-c C-i f                   导入一个 .rkt 文件
@@ -221,7 +221,7 @@ emacs/music-scratch.el
 M-x music-scratch
 
 C-c C-c   运行 scratch 文件并启动/刷新 Racket REPL
-C-j       执行前一个表达式，把结果插入 scratch buffer
+C-j       普通表达式回写结果；void 留空行；require/define 提交到 REPL
 C-c C-r   发送 region 到 REPL
 C-c C-z   切换到 REPL
 C-c C-e   显示光标处音乐符号的展开结构
@@ -233,7 +233,13 @@ C-c C-p   播放光标处音乐符号
 
 ```racket
 (+ 1 2) => 3
+(void)
+
+(require racket-music/kaitou)
+
 ```
+
+`void` 和无返回值表单会留下空行，保持 scratch transcript 分隔清晰。
 
 音乐符号：
 

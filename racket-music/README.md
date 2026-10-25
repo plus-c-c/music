@@ -136,6 +136,16 @@ C-u M-x racket-scratch
 `#lang racket-music` 本身只提供通用 DSL；demo 的 voice 绑定通过
 `racket-music/kaitou` 单独导入。
 
+注意：`C-j` 对普通表达式会把结果插回 scratch；如果表达式没有返回值
+（void），则留下一个空行。对 `require`、`define` 等模块级形式会提交到
+REPL，同样留下空行，因此：
+
+```racket
+(require racket-music/kaitou)
+```
+
+可以直接在 scratch 中对这一行按 `C-j`。
+
 ## 移除链接
 
 ```bash

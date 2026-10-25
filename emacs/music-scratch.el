@@ -70,7 +70,8 @@
     (format
      "#lang racket\n\
 \n\
-;; Music Scratch — C-c C-c run / C-c C-r send region / C-j eval+print\n\
+;; Music Scratch — C-c C-c run / C-c C-r send region\n\
+;; C-j eval+print (void -> blank line; require/define go to REPL)\n\
 ;; C-c C-z REPL / C-c C-e show / C-c C-x expand / C-c C-p play\n\
 \n\
 (require (file %S)\n\
@@ -98,14 +99,23 @@
     (with-temp-file music-scratch-file
       (insert (music-scratch--starter-content)))))
 
+(defun music-scratch--insert-empty-line (pos)
+  "Insert an empty result line at POS."
+  (save-excursion
+    (goto-char (or pos (point)))
+    (newline)))
+
 (defun music-scratch--show (string &optional pos)
-  "Display STRING in-place for C-j, otherwise use racket-show."
+  "Display STRING in-place for C-j, otherwise use racket-show.
+
+A void or empty result inserts an empty line."
   (if music-scratch--inline-eval-p
       (progn
         (setq music-scratch--inline-eval-p nil)
-        (unless (or (null string)
-                    (string-empty-p string)
-                    (string= string "#<void>"))
+        (if (or (null string)
+                (string-empty-p string)
+                (string= string "#<void>"))
+            (music-scratch--insert-empty-line pos)
           (let ((text (replace-regexp-in-string "\n" "\n;;   " string)))
             (save-excursion
               (goto-char (or pos (point)))
@@ -139,6 +149,16 @@
   "Send a one-line Racket form built from FORMAT-STRING and VALUE."
   (music-scratch--send-string
    (concat (format format-string value) "\n")))
+
+(defun music-scratch--top-level-form-p (beg end)
+  "Return non-nil if BEG..END starts a module-level definition."
+  (let* ((text (string-trim (buffer-substring-no-properties beg end)))
+         (head (when (string-match "\\`(\\([^ \t\n()]+\\)" text)
+                 (match-string 1 text))))
+    (and head
+         (or (member head '("require" "provide" "module" "module*" "module+"
+                            "struct" "begin"))
+             (string-prefix-p "define" head)))))
 
 ;;;###autoload
 (defun music-scratch ()
@@ -178,16 +198,26 @@
       (user-error "No REPL yet; run the scratch file first (C-c C-c)"))))
 
 (defun music-scratch-eval-print-last-sexp ()
-  "Evaluate the preceding expression and insert its value, like `C-j' in *scratch*."
+  "Evaluate the preceding sexp like `C-j' in *scratch*.
+
+Expressions are evaluated and their value is inserted after the sexp.
+Module-level forms such as `require` and `define` are submitted to the
+REPL instead, because they are not ordinary expressions."
   (interactive)
   (unless (racket--repl-session-id)
     (user-error "No Racket REPL session; run the scratch file first (C-c C-c)"))
-  (setq music-scratch--inline-eval-p t)
-  (condition-case err
-      (racket-eval-last-sexp)
-    (error
-     (setq music-scratch--inline-eval-p nil)
-     (signal (car err) (cdr err)))))
+  (let* ((beg (racket--start-of-previous-expression))
+         (end (point)))
+    (if (music-scratch--top-level-form-p beg end)
+        (progn
+          (racket-send-last-sexp)
+          (music-scratch--insert-empty-line end))
+      (setq music-scratch--inline-eval-p t)
+      (condition-case err
+          (racket-eval-last-sexp)
+        (error
+         (setq music-scratch--inline-eval-p nil)
+         (signal (car err) (cdr err)))))))
 
 (defun music-scratch-show-symbol-at-point ()
   "Show the expanded structure of the music symbol at point."
