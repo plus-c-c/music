@@ -136,12 +136,17 @@ C-u M-x racket-scratch
 `#lang racket-music` 本身只提供通用 DSL；demo 的 voice 绑定通过
 `racket-music/kaitou` 单独导入。
 
-注意：`show` 返回的是普通 Racket 字符串；REPL / `C-j` 会按合法 Racket
-字符串形式显示，即外层带双引号，内部换行用 `\n` 转义。例如：
+注意：`show` 返回的是普通 Racket 字符串。REPL 使用标准 Racket 打印
+（换行显示为 `\n`）；`C-j` 则把字符串结果渲染为合法的多行字符串字面量：
+外层仍是双引号，内部使用实际换行字符，而不是 `\n` 占位符。例如：
 
 ```text
 (show 'melody)
-"Melody\n  0.0  +5/4  rest 5/16\n  1.25  +4  rest 1\n  ..."
+"Melody
+  0.0  +5/4  rest 5/16
+  1.25  +4  rest 1
+  ...
+  16.5  +3/4  note D#6 3/16"
 ```
 
 `C-j` 对普通表达式会把结果写在表达式下一行，并把光标留在结果行之后，
