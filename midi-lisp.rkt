@@ -148,15 +148,11 @@
 ;; ------------------------------------------------------------
 ;; 显示
 ;;
-;; `show` returns a display-text value instead of printing as a side
-;; effect.  A custom writer makes it print like plain text both in the
-;; Racket REPL and in Emacs C-j.  `show->string` is the pure text API.
+;; `show` returns a plain Racket string.  C-j / the REPL therefore print
+;; it as a legal Racket string, with double quotes and escaped newlines.
+;; `show->string` is the same pure text API; `show` is kept as the
+;; display-oriented name.
 ;; ------------------------------------------------------------
-(struct display-text (text) #:transparent
-  #:methods gen:custom-write
-  [(define (write-proc value port mode)
-     (display (display-text-text value) port))])
-
 (define (drop-final-newline str)
   (if (and (positive? (string-length str))
            (char=? (string-ref str (sub1 (string-length str))) #\newline))
@@ -203,7 +199,7 @@
   (drop-final-newline text))
 
 (define (show value [env (current-music-environment)])
-  (display-text (show->string value env)))
+  (show->string value env))
 
 ;; ------------------------------------------------------------
 ;; 播放

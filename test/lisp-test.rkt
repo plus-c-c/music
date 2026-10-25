@@ -61,7 +61,8 @@
   (assert (= (length score-pedals-1) (length score-pedals-2)))
 
   ;; show 展示展开后的 note/chord。
-  (define shown (format "~a" (show 'test-voice)))
+  (define shown (format "~v" (show 'test-voice)))
+  (assert (string? (show 'test-voice)))
   (assert (string-contains? shown "note C4"))
   (assert (string-contains? shown "chord"))
   (assert (string-contains? shown "pedal")))
