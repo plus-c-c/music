@@ -4,7 +4,7 @@
   "voice_reference_wav": "/home/cjc/Downloads/iGEM 配乐/presentation/test-sound.wav",
   "voice_to_background_offset_db": 16.0,
   "total_duration_s": 900.0,
-  "section_gap_s": 2.0,
+  "section_gap_s": 1.75,
   "loop_seam_fade_ms": 5.0,
   "section_edge_fade_ms": 10.0,
   "sections": [
@@ -13,54 +13,78 @@
       "source": "开头",
       "loop_start_s": 31.277,
       "loop_end_s": 50.48,
-      "loop_repeats": 7,
+      "loop_repeats": 3,
       "tone": "calm",
-      "rms_dbfs": -22.0
+      "rms_dbfs": -22.0,
+      "intro_start_s": 0.0,
+      "intro_end_s": 31.277,
+      "outro_start_s": 50.48,
+      "outro_end_s": 81.633
     },
     {
       "name": "SEED 1",
       "source": "NEST开始后",
       "loop_start_s": 44.072,
       "loop_end_s": 56.866,
-      "loop_repeats": 10,
+      "loop_repeats": 4,
       "tone": "calm",
-      "rms_dbfs": -22.0
+      "rms_dbfs": -22.0,
+      "intro_start_s": 0.0,
+      "intro_end_s": 44.072,
+      "outro_start_s": 56.866,
+      "outro_end_s": 96.026
     },
     {
       "name": "SEED 2",
       "source": "2",
       "loop_start_s": 43.886,
       "loop_end_s": 64.459,
-      "loop_repeats": 6,
+      "loop_repeats": 3,
       "tone": "calm",
-      "rms_dbfs": -22.0
+      "rms_dbfs": -22.0,
+      "intro_start_s": 0.0,
+      "intro_end_s": 43.886,
+      "outro_start_s": 64.459,
+      "outro_end_s": 118.047
     },
     {
       "name": "SEED 3",
       "source": "3",
       "loop_start_s": 61.974,
       "loop_end_s": 76.115,
-      "loop_repeats": 13,
+      "loop_repeats": 4,
       "tone": "calm",
-      "rms_dbfs": -22.0
+      "rms_dbfs": -22.0,
+      "intro_start_s": 0.0,
+      "intro_end_s": 61.974,
+      "outro_start_s": 76.115,
+      "outro_end_s": 118.224
     },
     {
       "name": "硬件",
       "source": "2",
       "loop_start_s": 50.294,
       "loop_end_s": 60.581,
-      "loop_repeats": 16,
+      "loop_repeats": 4,
       "tone": "hard",
-      "rms_dbfs": -20.0
+      "rms_dbfs": -20.0,
+      "intro_start_s": 0.0,
+      "intro_end_s": 50.294,
+      "outro_start_s": 60.581,
+      "outro_end_s": 118.047
     },
     {
       "name": "创业",
       "source": "结尾",
       "loop_start_s": 54.846,
       "loop_end_s": 74.048,
-      "loop_repeats": 8,
+      "loop_repeats": 4,
       "tone": "distant",
-      "rms_dbfs": -26.0
+      "rms_dbfs": -26.0,
+      "intro_start_s": 0.0,
+      "intro_end_s": 54.846,
+      "outro_start_s": 74.048,
+      "outro_end_s": 110.446
     }
   ]
 }

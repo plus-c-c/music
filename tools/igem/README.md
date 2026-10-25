@@ -263,10 +263,24 @@ python3 tools/igem/presentation_background.py
 - `test-sound.mp4` 提取音频：`presentation/test-sound.wav`
 - 旁白整体响度：约 **-19.2 LUFS**
 - 背景目标：旁白下方 **16 dB**，即 **-35.2 LUFS**
-- 每个乐段按**完整循环重复**，不截断半个循环
-- 段落之间留 **2 秒静音**，最后留约 2.16 秒收尾
+- 每个乐段都包含 **起始段 + 完整循环重复 + 结束段**：
+  - 起始段：原曲 `0 → loop_start`
+  - 循环段：`loop_start → loop_end` 完整重复
+  - 结束段：原曲 `loop_end → 原曲结束`
+- 段落之间留 **1.75 秒静音**
 - 循环接缝仅做 5 ms 边缘淡化，不做改变时间轴的交叉淡化
 - 15 分钟总长保持 900 秒
+
+当前严格循环背景的各段结构：
+
+| 段落 | 起始段 | 循环 | 结束段 | 音乐长度 |
+|---|---:|---:|---:|---:|
+| 背景+HP | 0–31.277 | 31.277–50.480 ×3 | 50.480–81.633 | 120.039s |
+| SEED 1 | 0–44.072 | 44.072–56.866 ×4 | 56.866–96.026 | 134.408s |
+| SEED 2 | 0–43.886 | 43.886–64.459 ×3 | 64.459–118.047 | 159.193s |
+| SEED 3 | 0–61.974 | 61.974–76.115 ×4 | 76.115–118.224 | 160.647s |
+| 硬件 | 0–50.294 | 50.294–60.581 ×4 | 60.581–118.047 | 148.908s |
+| 创业 | 0–54.846 | 54.846–74.048 ×4 | 74.048–110.446 | 168.052s |
 
 输出：
 
@@ -307,7 +321,7 @@ tools/igem/render-presentation.sh
 
 ```text
 presentation/presentation-voice-loop-15min.mp3
-presentation/presentation-background-plus6db.mp3
+presentation/presentation-background-plus10db.mp3
 presentation/presentation-voice-loop-with-background-15min.mp3
 presentation/presentation-voice-loop-levels.json
 ```

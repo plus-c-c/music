@@ -230,15 +230,32 @@ def build(config: dict, audio_dir: Path, out_dir: Path) -> dict:
             if rate != SR:
                 raise MixError(f"unexpected source sample rate: {rate}")
             repeats = int(sec["loop_repeats"])
-            raw_loop = strict_loop(
+            loop_start = float(sec["loop_start_s"])
+            loop_end = float(sec["loop_end_s"])
+            intro_start = float(sec.get("intro_start_s", 0.0))
+            intro_end = float(sec.get("intro_end_s", loop_start))
+            outro_start = float(sec.get("outro_start_s", loop_end))
+            outro_end = float(
+                sec.get("outro_end_s", len(source) / SR)
+            )
+            intro = source[
+                max(0, int(round(intro_start * SR))) :
+                min(len(source), int(round(intro_end * SR)))
+            ]
+            outro = source[
+                max(0, int(round(outro_start * SR))) :
+                min(len(source), int(round(outro_end * SR)))
+            ]
+            loops = strict_loop(
                 source,
-                float(sec["loop_start_s"]),
-                float(sec["loop_end_s"]),
+                loop_start,
+                loop_end,
                 repeats,
                 seam_ms,
             )
-            duration = len(raw_loop) / SR
-            processed = apply_tone(raw_loop, str(sec["tone"]), duration, tmpdir)
+            raw_section = np.concatenate([intro, loops, outro], axis=0)
+            duration = len(raw_section) / SR
+            processed = apply_tone(raw_section, str(sec["tone"]), duration, tmpdir)
             target_rms = float(sec["rms_dbfs"])
             rms = float(np.sqrt(np.mean(processed * processed)))
             if rms > 1e-9:
@@ -294,6 +311,10 @@ def build(config: dict, audio_dir: Path, out_dir: Path) -> dict:
                     "loop_end_s": sec["loop_end_s"],
                     "loop_length_s": round(loop_len, 3),
                     "loop_repeats": sec["loop_repeats"],
+                    "intro_start_s": sec.get("intro_start_s", 0.0),
+                    "intro_end_s": sec.get("intro_end_s", sec["loop_start_s"]),
+                    "outro_start_s": sec.get("outro_start_s", sec["loop_end_s"]),
+                    "outro_end_s": sec.get("outro_end_s", None),
                     "tone": sec["tone"],
                 }
             )
