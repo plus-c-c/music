@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Extract isolated presentation parts for comparison.
 
-Currently this extracts the hardware background section and the voice
-reference as separate files, then can play them sequentially.
+The hardware background section and the voice reference are exported
+separately, and a simultaneous hardware-background + voice mix is created.
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import soundfile as sf
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_AUDIO_DIR = Path(
@@ -98,8 +99,6 @@ def encode_mp3(wav: Path, mp3: Path) -> None:
 
 
 def peak_dbfs(path: Path) -> float:
-    import soundfile as sf
-
     data, _ = sf.read(str(path), always_2d=True, dtype="float32")
     peak = float(np.max(np.abs(data))) if len(data) else 0.0
     return 20.0 * math.log10(peak + 1e-12)
@@ -112,6 +111,7 @@ def main() -> int:
     parser.add_argument("--cues", default=str(DEFAULT_CUES))
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR))
     parser.add_argument("--section", default="硬件")
+    parser.add_argument("--mix-peak-dbfs", type=float, default=-1.0)
     parser.add_argument("--play", action="store_true")
     args = parser.parse_args()
     require("ffmpeg")
@@ -142,6 +142,27 @@ def main() -> int:
     encode_mp3(hw_wav, hw_mp3)
     extract_segment(voice, voice_wav, 0.0, 1e9)
     encode_mp3(voice_wav, voice_mp3)
+
+    mixed_wav = out_dir / "presentation-hardware-background-with-voice.wav"
+    mixed_mp3 = out_dir / "presentation-hardware-background-with-voice.mp3"
+    hw, hw_sr = sf.read(str(hw_wav), always_2d=True, dtype="float64")
+    vo, vo_sr = sf.read(str(voice_wav), always_2d=True, dtype="float64")
+    if hw_sr != vo_sr:
+        raise IsolateError(f"sample-rate mismatch: {hw_sr} vs {vo_sr}")
+    n = max(len(hw), len(vo))
+    def pad(x):
+        if len(x) >= n:
+            return x[:n]
+        return np.concatenate([x, np.zeros((n - len(x), 2))], axis=0)
+    mixed = pad(hw) + pad(vo)
+    peak = float(np.max(np.abs(mixed)))
+    limit = 10.0 ** (float(args.mix_peak_dbfs) / 20.0)
+    if peak > limit:
+        mixed *= limit / peak
+    mixed = np.clip(mixed, -1.0, 1.0)
+    sf.write(str(mixed_wav), mixed, hw_sr, subtype="PCM_16")
+    encode_mp3(mixed_wav, mixed_mp3)
+
     info = {
         "section": cue["name"],
         "section_start_s": cue["music_start_s"],
@@ -151,6 +172,8 @@ def main() -> int:
         "hardware_background_peak_dbfs": round(peak_dbfs(hw_wav), 3),
         "voice_reference_mp3": str(voice_mp3),
         "voice_reference_peak_dbfs": round(peak_dbfs(voice_wav), 3),
+        "simultaneous_mix_mp3": str(mixed_mp3),
+        "simultaneous_mix_peak_dbfs": round(peak_dbfs(mixed_wav), 3),
     }
     (out_dir / "presentation-isolated-parts.json").write_text(
         json.dumps(info, ensure_ascii=False, indent=2)
@@ -158,31 +181,21 @@ def main() -> int:
     print(json.dumps(info, ensure_ascii=False, indent=2))
 
     if args.play:
-        log = out_dir / "play-isolated-parts.log"
-        script = out_dir / "play-isolated-parts.sh"
+        log = out_dir / "play-hardware-with-voice.log"
+        script = out_dir / "play-hardware-with-voice.sh"
         lines = [
             "#!/usr/bin/env bash",
             "set -u",
             f"LOG={shlex.quote(str(log))}",
             "{",
             'echo "PLAYLIST_START $(date -Is)"',
+            'printf "PLAY hardware background + voice together %s\\n" "$(date +%H:%M:%S)"',
+            "ffplay -nodisp -autoexit -hide_banner -loglevel error "
+            f"-volume 85 {shlex.quote(str(mixed_mp3))}",
+            'printf "STOP hardware background + voice rc=%s %s\\n" "$?" "$(date +%H:%M:%S)"',
+            'echo "PLAYLIST_END $(date -Is)"',
+            "} >> \"$LOG\" 2>&1",
         ]
-        for label, path in [
-            ("hardware background", hw_mp3),
-            ("voice reference", voice_mp3),
-        ]:
-            lines.append(
-                f'printf "PLAY %s %s\\n" "{label}" "$(date +%H:%M:%S)"'
-            )
-            lines.append(
-                "ffplay -nodisp -autoexit -hide_banner -loglevel error "
-                f"-volume 85 {shlex.quote(str(path))}"
-            )
-            lines.append(
-                f'printf "STOP %s rc=%s %s\\n" "{label}" "$?" "$(date +%H:%M:%S)"'
-            )
-            lines.append("sleep 1")
-        lines += ['echo "PLAYLIST_END $(date -Is)"', "} >> \"$LOG\" 2>&1"]
         script.write_text("\n".join(lines) + "\n")
         script.chmod(0o755)
         subprocess.Popen(

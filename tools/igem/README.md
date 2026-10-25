@@ -340,7 +340,7 @@ python3 tools/igem/presentation_voice_loop.py --background-gain-db 12
 ```
 
 
-## 9. 单独播放硬件背景与人声
+## 9. 硬件背景与人声同时播放
 
 ```bash
 python3 tools/igem/presentation_isolate.py --play
@@ -351,16 +351,46 @@ python3 tools/igem/presentation_isolate.py --play
 ```text
 presentation/presentation-hardware-background-only.mp3
 presentation/presentation-voice-reference.mp3
+presentation/presentation-hardware-background-with-voice.mp3
 presentation/presentation-isolated-parts.json
 ```
 
-默认播放顺序：
+同时播放版本：
 
 ```text
-硬件段背景（约 148.9 秒）
-1 秒间隔
-人声参考（约 145.4 秒）
+硬件段背景（148.908 秒） + 人声参考（145.408 秒）
 ```
 
-硬件段背景取自当前 `presentation-background-plus10db.wav` 的
-`581.287–730.195s`，人声参考取自原始 `test-sound.wav`。
+- 两轨都从 0 秒开始对齐。
+- 人声结束后保留约 3.5 秒硬件背景尾段。
+- 混合峰值限制在 `-1.0 dBFS`。
+- 硬件段背景取自当前 `presentation-background-plus10db.wav` 的
+  `581.287–730.195s`，人声参考取自原始 `test-sound.wav`。
+
+## 10. 固定响度表
+
+`presentation_loudness.py` 始终输出以下列：
+
+```text
+段落 | 起始段 | 循环 | 结束段 | 音乐长度 | 段后空隙 | 人声 LUFS | 背景 LUFS | 差值
+```
+
+命令：
+
+```bash
+python3 tools/igem/presentation_loudness.py
+```
+
+计算内容：
+
+- 起始段、循环、结束段来自 `presentation-background-cues.json`；
+- 每个段落的人声/背景 LUFS 按该段的 `music_start_s` 与 `music_duration_s` 实测；
+- 差值统一为 `人声 LUFS - 背景 LUFS`；
+- 额外输出整体 LUFS 和按段落时长加权的平均差值。
+
+输出：
+
+```text
+presentation/presentation-loudness-report.md
+presentation/presentation-loudness-report.json
+```
