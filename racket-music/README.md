@@ -137,7 +137,7 @@ C-u M-x racket-scratch
 `racket-music/kaitou` 单独导入。
 
 注意：`C-j` 对普通表达式会把结果插回 scratch；如果表达式没有返回值
-（void），则留下一个空行。对 `require`、`define` 等模块级形式会提交到
+（void），则留下一个空行，并把光标移动到该空行。对 `require`、`define` 等模块级形式会提交到
 REPL，同样留下空行，因此：
 
 ```racket

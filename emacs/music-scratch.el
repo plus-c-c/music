@@ -100,10 +100,9 @@
       (insert (music-scratch--starter-content)))))
 
 (defun music-scratch--insert-empty-line (pos)
-  "Insert an empty result line at POS."
-  (save-excursion
-    (goto-char (or pos (point)))
-    (newline)))
+  "Insert an empty result line at POS and move point to it."
+  (goto-char (or pos (point)))
+  (newline))
 
 (defun music-scratch--show (string &optional pos)
   "Display STRING in-place for C-j, otherwise use racket-show.
