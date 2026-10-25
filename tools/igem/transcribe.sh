@@ -141,18 +141,24 @@ done
 wait
 printf '%s\n' "--- remote result ---"
 for f in "$OUTPUT"/*.mid; do
-  [ -f "$f" ] && ls -lh "$f"
+  [ -f "$f" ] || continue
+  ls -lh "$f"
 done
 for f in "$OUTPUT"/*.rc; do
-  [ -f "$f" ] && echo "$(basename "$f" .rc): rc=$(cat "$f")"
+  [ -f "$f" ] || continue
+  echo "$(basename "$f" .rc): rc=$(cat "$f")"
 done
+true
 REMOTE_SCRIPT
 
 mkdir -p "$MIDI_DIR" "$MIDI_DIR/logs"
 ssh -o BatchMode=yes "$REMOTE" \
   "cd '$REMOTE_OUTPUT' && tar -cf - -- *.mid" | tar -C "$MIDI_DIR" -xf -
-ssh -o BatchMode=yes "$REMOTE" \
-  "cd '$REMOTE_OUTPUT' && tar -cf - -- *.log" | tar -C "$MIDI_DIR/logs" -xf -
+if ssh -o BatchMode=yes "$REMOTE" \
+  "cd '$REMOTE_OUTPUT' && test -n \"\$(find . -maxdepth 1 -name '*.log' -print -quit)\""; then
+  ssh -o BatchMode=yes "$REMOTE" \
+    "cd '$REMOTE_OUTPUT' && tar -cf - -- *.log" | tar -C "$MIDI_DIR/logs" -xf -
+fi
 
 printf '%s\n' "--- local MIDI ---"
 find "$MIDI_DIR" -maxdepth 1 -type f -name '*.mid' -printf '%s\t%p\n' | sort -k2
