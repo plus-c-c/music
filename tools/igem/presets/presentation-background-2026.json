@@ -1,0 +1,66 @@
+{
+  "title": "iGEM 2026 presentation background (strict-loop version)",
+  "voice_reference": "/home/cjc/Downloads/PV/test-sound.mp4",
+  "voice_reference_wav": "/home/cjc/Downloads/iGEM 配乐/presentation/test-sound.wav",
+  "voice_to_background_offset_db": 16.0,
+  "total_duration_s": 900.0,
+  "section_gap_s": 2.0,
+  "loop_seam_fade_ms": 5.0,
+  "section_edge_fade_ms": 10.0,
+  "sections": [
+    {
+      "name": "背景+HP",
+      "source": "开头",
+      "loop_start_s": 31.277,
+      "loop_end_s": 50.48,
+      "loop_repeats": 7,
+      "tone": "calm",
+      "rms_dbfs": -22.0
+    },
+    {
+      "name": "SEED 1",
+      "source": "NEST开始后",
+      "loop_start_s": 44.072,
+      "loop_end_s": 56.866,
+      "loop_repeats": 10,
+      "tone": "calm",
+      "rms_dbfs": -22.0
+    },
+    {
+      "name": "SEED 2",
+      "source": "2",
+      "loop_start_s": 43.886,
+      "loop_end_s": 64.459,
+      "loop_repeats": 6,
+      "tone": "calm",
+      "rms_dbfs": -22.0
+    },
+    {
+      "name": "SEED 3",
+      "source": "3",
+      "loop_start_s": 61.974,
+      "loop_end_s": 76.115,
+      "loop_repeats": 13,
+      "tone": "calm",
+      "rms_dbfs": -22.0
+    },
+    {
+      "name": "硬件",
+      "source": "2",
+      "loop_start_s": 50.294,
+      "loop_end_s": 60.581,
+      "loop_repeats": 16,
+      "tone": "hard",
+      "rms_dbfs": -20.0
+    },
+    {
+      "name": "创业",
+      "source": "结尾",
+      "loop_start_s": 54.846,
+      "loop_end_s": 74.048,
+      "loop_repeats": 8,
+      "tone": "distant",
+      "rms_dbfs": -26.0
+    }
+  ]
+}

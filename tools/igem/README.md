@@ -50,12 +50,14 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 
 - `igem_music.py`：音量、循环检测、循环渲染、播放。
 - `presentation_mix.py`：把选定的循环扩展成 15 分钟演示音轨。
+- `presentation_background.py`：严格拍点循环、段落留空隙、按旁白音量校准的背景版。
 - `transcribe.sh`：上传 MP3 到远程，多进程并行转录，下载 MIDI。
 - `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
 - `aria-amt-cpu.patch`：Aria-AMT CPU 补丁。
 - `presets/igem-2026.json`：本次五首曲子的主循环选择。
 - `presets/igem-2026-candidates.json`：`detect` 生成的候选列表，供替换主候选时参考。
 - `presets/presentation-2026.json`：15 分钟演示音轨的分段、循环和音色配置。
+- `presets/presentation-background-2026.json`：严格循环背景版的重复次数、空隙和电平配置。
 - `requirements.txt`：本地 Python 依赖。
 
 ## 1. 远程转录
@@ -243,3 +245,33 @@ python3 tools/igem/presentation_mix.py
 - `calm`：低通 9 kHz + 高通 30 Hz，略降电平；
 - `hard`：高通 45 Hz + 3:1 压缩，保持瞬态；
 - `distant`：低通 4.2 kHz + 短回声，电平更低。
+
+
+## 7. 严格循环 + 旁白音量参考版
+
+先从测试旁白中提取音频并测量整体响度：
+
+```bash
+python3 tools/igem/presentation_background.py
+```
+
+当前参考：
+
+- `test-sound.mp4` 提取音频：`presentation/test-sound.wav`
+- 旁白整体响度：约 **-19.2 LUFS**
+- 背景目标：旁白下方 **16 dB**，即 **-35.2 LUFS**
+- 每个乐段按**完整循环重复**，不截断半个循环
+- 段落之间留 **2 秒静音**，最后留约 2.16 秒收尾
+- 循环接缝仅做 5 ms 边缘淡化，不做改变时间轴的交叉淡化
+- 15 分钟总长保持 900 秒
+
+输出：
+
+```text
+presentation/igem-presentation-background-15min.wav
+presentation/igem-presentation-background-15min.mp3
+presentation/presentation-level-test.mp3
+presentation/presentation-background-cues.json
+```
+
+其中 `presentation-level-test.mp3` 是前 2 分 25 秒的旁白 + 背景试听，用来确认人声与背景比例。
