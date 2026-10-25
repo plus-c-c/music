@@ -2,7 +2,8 @@
 
 ;; #lang racket-music 应同时提供 Racket 与本地音乐环境。
 (require rackunit
-         racket/port)
+         racket/port
+         racket-music/kaitou)
 
 (check-true (voice? (interpret 'piano-high)))
 (check-true (expanded-voice? (expand 'melody)))

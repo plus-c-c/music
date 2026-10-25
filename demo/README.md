@@ -269,17 +269,26 @@ aria-intro  / 'aria-intro
 raco link --user /home/cjc/Repository/music/racket-music
 ```
 
-之后可直接使用：
+`#lang racket-music` 只提供完整 Racket 与通用 `midi-lisp` 环境，
+不包含 demo。当前前奏需要单独导入：
 
 ```racket
 #lang racket-music
+(require racket-music/kaitou)
 
 (show 'melody)
 (play 'aria-intro)
 ```
 
-该语言自动提供完整 Racket、`midi-lisp` 环境以及当前前奏的 voice 绑定。
-在通用 Emacs scratch 中，`C-u M-x racket-scratch` 输入 `racket-music` 即可。
+在通用 Emacs scratch 中：
+
+```text
+C-u M-x racket-scratch
+racket-music
+C-c C-i m  racket-music/kaitou
+C-c C-c
+```
+
 详见 `racket-music/README.md`。
 
 ### 5.3 输入符号并展开
@@ -368,7 +377,8 @@ Melody
 |---|---|
 | `midi/main.rkt` | 公共 API 统一入口 |
 | `midi-lisp.rkt` | Lisp 风格符号环境、`interpret`、`expand`、`show`、`play` |
-| `racket-music/main.rkt` | `#lang racket-music` 语言入口 |
+| `racket-music/main.rkt` | `#lang racket-music` 语言入口（只含通用 DSL） |
+| `racket-music/kaitou.rkt` | 单独导入当前 Aria 前奏 demo |
 | `racket-music/lang/reader.rkt` | `#lang racket-music` 的 s-exp reader |
 | `racket-music/README.md` | 本地语言安装与使用说明 |
 | `emacs/music-scratch.el` | Emacs DrRacket 风格 `*Music Scratch*` / `*Music REPL*` 集成 |

@@ -141,10 +141,22 @@ racket-music/
 raco link --user /home/cjc/Repository/music/racket-music
 ```
 
-之后可以直接写：
+之后可以直接写通用音乐代码：
 
 ```racket
 #lang racket-music
+
+(define-voice scratch-voice
+  (part "Scratch"
+        (note 1/4 60)
+        (chord 1/4 62 'major)))
+```
+
+当前 Aria 前奏 demo 不包含在语言中，需要单独导入：
+
+```racket
+#lang racket-music
+(require racket-music/kaitou)
 
 (show 'melody)
 (play 'aria-intro)
@@ -156,7 +168,12 @@ raco link --user /home/cjc/Repository/music/racket-music
 C-u M-x racket-scratch
 ```
 
-输入 `racket-music`，即可让会话直接拥有音乐 DSL 和当前前奏符号。
+输入 `racket-music`，得到通用 DSL 会话；需要 demo 时：
+
+```text
+C-c C-i m  racket-music/kaitou
+C-c C-c
+```
 
 注意：该语言中 `eighth`、`rest`、`expand` 使用音乐 DSL 定义，
 会覆盖 Racket 的同名绑定；需要 Racket 原绑定时可加前缀导入。

@@ -1,7 +1,10 @@
 # `#lang racket-music`
 
 `racket-music` 是当前 music 仓库提供的本地 Racket 语言。它把完整 Racket
-与仓库的音乐 DSL / 符号环境合并到一个 `#lang` 中。
+与通用的音乐 DSL / 符号环境合并到一个 `#lang` 中。
+
+注意：**demo 乐谱不属于语言本体**。`#lang racket-music` 只提供通用
+DSL 与环境；当前 Aria 前奏需要单独导入 `racket-music/kaitou`。
 
 ## 安装到本地 Racket
 
@@ -20,26 +23,38 @@ racket -e '(require racket-music/main) (displayln "ok")'
 ```racket
 #lang racket-music
 
-(show 'melody)
-(play 'aria-intro)
-
+;; 通用语言能力：完整 Racket + music DSL / 符号环境
 (define-voice scratch-voice
   (part "Scratch"
         (note 1/4 60)
         (chord 1/4 62 'major)))
+
+(show 'scratch-voice)
 ```
 
-该语言自动提供：
+导入当前 Aria 前奏 demo：
+
+```racket
+#lang racket-music
+(require racket-music/kaitou)
+
+(show 'melody)
+(play 'aria-intro)
+```
+
+`#lang racket-music` 自动提供：
 
 - 完整 Racket；
-- `midi-lisp.rkt` 的符号环境、展开、显示、播放 API；
-- `demo/kaitou-lisp.rkt` 中的当前前奏绑定：
-  - `piano-high`
-  - `piano-low`
-  - `melody`
-  - `pedal-voice`
-  - `aria-intro`
-  - 对应符号 `'piano-high` / `'melody` / `'aria-intro` 等。
+- `midi-lisp.rkt` 的符号环境、展开、显示、播放 API。
+
+`racket-music/kaitou` 单独提供：
+
+- `piano-high`
+- `piano-low`
+- `melody`
+- `pedal-voice`
+- `aria-intro`
+- 对应符号 `'piano-high` / `'melody` / `'aria-intro` 等。
 
 ## 名称冲突
 
@@ -66,19 +81,60 @@ expand
 
 ## 在 Emacs 通用 scratch 中使用
 
-先安装 collection link，然后：
+先安装 collection link，然后创建通用 scratch：
 
 ```text
 C-u M-x racket-scratch
 ```
 
-输入：
+推荐流程：
 
-```text
-racket-music
-```
+1. 安装 collection：
 
-即可得到带有音乐环境的交互式 Racket 会话。
+   ```bash
+   raco link --user /home/cjc/Repository/music/racket-music
+   ```
+
+2. 新建指定 `#lang` 的 scratch：
+
+   ```text
+   C-u M-x racket-scratch
+   ```
+
+   输入：
+
+   ```text
+   racket-music
+   ```
+
+3. 如果需要当前 Aria 前奏，单独导入 demo：
+
+   ```text
+   C-c C-i m  racket-music/kaitou
+   ```
+
+   或在 scratch 中直接写：
+
+   ```racket
+   #lang racket-music
+   (require racket-music/kaitou)
+   ```
+
+4. 运行：
+
+   ```text
+   C-c C-c
+   ```
+
+5. 在 scratch 或 REPL 中：
+
+   ```racket
+   (show 'melody)
+   (play 'aria-intro)
+   ```
+
+`#lang racket-music` 本身只提供通用 DSL；demo 的 voice 绑定通过
+`racket-music/kaitou` 单独导入。
 
 ## 移除链接
 
