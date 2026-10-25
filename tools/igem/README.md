@@ -53,6 +53,7 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `presentation_background.py`：严格拍点循环、段落留空隙、按旁白音量校准的背景版。
 - `presentation_voice_loop.py`：把测试人声循环到 15 分钟，生成人声/背景/混合三个音量对照版本。
 - `render-presentation.sh`：一键重建背景和 15 分钟人声循环对照版。
+- `presentation_isolate.py`：单独导出硬件段背景和人声参考，便于 A/B。
 - `transcribe.sh`：上传 MP3 到远程，多进程并行转录，下载 MIDI。
 - `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
 - `aria-amt-cpu.patch`：Aria-AMT CPU 补丁。
@@ -337,3 +338,29 @@ presentation/presentation-voice-loop-levels.json
 ```bash
 python3 tools/igem/presentation_voice_loop.py --background-gain-db 12
 ```
+
+
+## 9. 单独播放硬件背景与人声
+
+```bash
+python3 tools/igem/presentation_isolate.py --play
+```
+
+输出：
+
+```text
+presentation/presentation-hardware-background-only.mp3
+presentation/presentation-voice-reference.mp3
+presentation/presentation-isolated-parts.json
+```
+
+默认播放顺序：
+
+```text
+硬件段背景（约 148.9 秒）
+1 秒间隔
+人声参考（约 145.4 秒）
+```
+
+硬件段背景取自当前 `presentation-background-plus10db.wav` 的
+`581.287–730.195s`，人声参考取自原始 `test-sound.wav`。
