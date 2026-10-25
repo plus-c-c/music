@@ -51,6 +51,7 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `igem_music.py`：音量、循环检测、循环渲染、播放。
 - `presentation_mix.py`：把选定的循环扩展成 15 分钟演示音轨。
 - `presentation_background.py`：严格拍点循环、段落留空隙、按旁白音量校准的背景版。
+- `presentation_voice_loop.py`：把测试人声循环到 15 分钟，生成人声/背景/混合三个音量对照版本。
 - `transcribe.sh`：上传 MP3 到远程，多进程并行转录，下载 MIDI。
 - `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
 - `aria-amt-cpu.patch`：Aria-AMT CPU 补丁。
@@ -275,3 +276,39 @@ presentation/presentation-background-cues.json
 ```
 
 其中 `presentation-level-test.mp3` 是前 2 分 25 秒的旁白 + 背景试听，用来确认人声与背景比例。
+
+
+## 8. 15 分钟人声循环音量对照
+
+把 `test-sound.wav` 循环到 15 分钟，同时输出：
+
+- 人声单独循环；
+- 提高 6 dB 后的背景；
+- 人声 + 提高 6 dB 背景的混合版。
+
+命令：
+
+```bash
+python3 tools/igem/presentation_voice_loop.py --background-gain-db 6
+```
+
+输出：
+
+```text
+presentation/presentation-voice-loop-15min.mp3
+presentation/presentation-background-plus6db.mp3
+presentation/presentation-voice-loop-with-background-15min.mp3
+presentation/presentation-voice-loop-levels.json
+```
+
+当前测量：
+
+- 人声循环：`-19.2 LUFS`，true peak `-0.6 dBFS`
+- 背景 +6 dB：`-29.2 LUFS`，true peak `-15.6 dBFS`
+- 混合：`-20.0 LUFS`，true peak `-1.0 dBFS`
+
+如果人声仍然偏大，可以继续：
+
+```bash
+python3 tools/igem/presentation_voice_loop.py --background-gain-db 8
+```
