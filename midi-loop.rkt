@@ -56,16 +56,16 @@
 ;; ------------------------------------------------------------
 ;; 基本校验
 ;; ------------------------------------------------------------
-(define (check-loop-args repeats start length end-length pickup-window)
+(define (check-loop-args repeats start loop-length end-length pickup-window)
   (unless (and (exact-integer? repeats) (> repeats 0))
     (error 'loop-events "循环次数必须是正整数，收到: ~a" repeats))
   (unless (real? start)
     (error 'loop-events "start 必须是实数，收到: ~a" start))
-  (unless (and (real? length) (positive? length))
-    (error 'loop-events "length 必须是正数，收到: ~a" length))
+  (unless (and (real? loop-length) (positive? loop-length))
+    (error 'loop-events "length 必须是正数，收到: ~a" loop-length))
   (unless (and (real? end-length)
                (>= end-length 0)
-               (<= end-length length))
+               (<= end-length loop-length))
     (error 'loop-events "end-length 必须在 0 和 length 之间，收到: ~a"
            end-length))
   (when pickup-window
@@ -192,18 +192,18 @@
 ;; ------------------------------------------------------------
 (define (loop-events events pedals repeats
                      #:start start
-                     #:length length
+                     #:length loop-length
                      #:end-length [end-length 0]
                      #:pickup-window [pickup-window #f]
                      #:start-transform [start-transform (lambda (s) s)]
                      #:end-transform [end-transform empty-loop-segment]
                      #:bridge-pedals? [bridge-pedals? #f])
-  (check-loop-args repeats start length end-length pickup-window)
-  (define end (+ start length))
+  (check-loop-args repeats start loop-length end-length pickup-window)
+  (define end (+ start loop-length))
   (define cut (- end end-length))
   (define pickup-start (- start (or pickup-window 0)))
   (define last-index (sub1 repeats))
-  (define last-offset (* last-index length))
+  (define last-offset (* last-index loop-length))
 
   ;; 起始段：只包含弱起窗口内、且不进入 loop 主体的材料。
   (define start-events
@@ -272,7 +272,7 @@
     (for/list ([cycle (in-range repeats)])
       (define last? (= cycle last-index))
       (define trim? (and last? (> end-length 0)))
-      (define offset (* cycle length))
+      (define offset (* cycle loop-length))
       (filter-map
        (lambda (e)
          (define e* (if trim? (trim-event-tail e cut) e))
@@ -287,7 +287,7 @@
     (for/list ([cycle (in-range repeats)])
       (define last? (= cycle last-index))
       (define trim? (and last? (> end-length 0)))
-      (define offset (* cycle length))
+      (define offset (* cycle loop-length))
       (define body
         (filter-map
          (lambda (p)
@@ -329,7 +329,7 @@
 
 (define (loop-score score repeats
                     #:start start
-                    #:length length
+                    #:length loop-length
                     #:end-length [end-length 0]
                     #:pickup-window [pickup-window #f]
                     #:start-transform [start-transform (lambda (s) s)]
@@ -342,7 +342,7 @@
                (score-pedals score*)
                repeats
                #:start start
-               #:length length
+               #:length loop-length
                #:end-length end-length
                #:pickup-window pickup-window
                #:start-transform start-transform
@@ -351,7 +351,7 @@
 
 (define (play-loop score repeats
                    #:start start
-                   #:length length
+                   #:length loop-length
                    #:end-length [end-length 0]
                    #:pickup-window [pickup-window #f]
                    #:start-transform [start-transform (lambda (s) s)]
@@ -367,7 +367,7 @@
                  (score-pedals score*)
                  repeats
                  #:start start
-                 #:length length
+                 #:length loop-length
                  #:end-length end-length
                  #:pickup-window pickup-window
                  #:start-transform start-transform
