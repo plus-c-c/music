@@ -242,9 +242,6 @@ C-c C-c
 (show 'melody)
 ```
 
-也可以使用音乐仓库提供的 `emacs/music-scratch.el` 专用封装；
-详见 `emacs/README.md`。
-
 Racket REPL 中也可以直接：
 
 ```bash
@@ -381,8 +378,6 @@ Melody
 | `racket-music/kaitou.rkt` | 单独导入当前 Aria 前奏 demo |
 | `racket-music/lang/reader.rkt` | `#lang racket-music` 的 s-exp reader |
 | `racket-music/README.md` | 本地语言安装与使用说明 |
-| `emacs/music-scratch.el` | Emacs DrRacket 风格 `*Music Scratch*` / `*Music REPL*` 集成 |
-| `emacs/README.md` | Emacs 插件审计、交互式编程与 AI 辅助修改方案 |
 | `midi-loop.rkt` | 三段循环（start / loop / end）、段变换、踏板边界合并、循环播放 |
 | `midi-dsl.rkt` | `note`、`chord`、`rest`、`pedal`、`tie`、`tie-start`、`tie-end`、`tie-continue`、`part`、`score` |
 | `midi-score.rkt` | 展开、`measure`、跨小节 tie 合并、CC64 合并、播放 |
