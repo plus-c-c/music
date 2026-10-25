@@ -5,7 +5,7 @@
   "background_wav": "/home/cjc/Downloads/iGEM 配乐/presentation/igem-presentation-background-15min.wav",
   "out_dir": "/home/cjc/Downloads/iGEM 配乐/presentation",
   "duration_s": 900.0,
-  "background_gain_db": 6.0,
+  "background_gain_db": 10.0,
   "voice_gain_db": 0.0,
   "voice_loop_crossfade_ms": 100.0,
   "mix_peak_dbfs": -1.0

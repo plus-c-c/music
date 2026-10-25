@@ -285,13 +285,13 @@ presentation/presentation-background-cues.json
 把 `test-sound.wav` 循环到 15 分钟，同时输出：
 
 - 人声单独循环；
-- 提高 6 dB 后的背景；
-- 人声 + 提高 6 dB 背景的混合版。
+- 提高 10 dB 后的背景；
+- 人声 + 提高 10 dB 背景的混合版。
 
 命令：
 
 ```bash
-python3 tools/igem/presentation_voice_loop.py --background-gain-db 6
+python3 tools/igem/presentation_voice_loop.py --background-gain-db 10
 ```
 
 一键重建当前背景和对照版：
@@ -315,11 +315,11 @@ presentation/presentation-voice-loop-levels.json
 当前测量：
 
 - 人声循环：`-19.2 LUFS`，true peak `-0.6 dBFS`
-- 背景 +6 dB：`-29.2 LUFS`，true peak `-15.6 dBFS`
-- 混合：`-20.0 LUFS`，true peak `-1.0 dBFS`
+- 背景 +10 dB：`-25.2 LUFS`，true peak `-11.6 dBFS`
+- 混合：`-19.7 LUFS`，true peak `-1.0 dBFS`
 
 如果人声仍然偏大，可以继续：
 
 ```bash
-python3 tools/igem/presentation_voice_loop.py --background-gain-db 8
+python3 tools/igem/presentation_voice_loop.py --background-gain-db 12
 ```
