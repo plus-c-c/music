@@ -19,7 +19,8 @@
 
 (require "midi/main.rkt"
          "midi-display.rkt"
-         (only-in racket/list append*))
+         (only-in racket/list append*)
+         (only-in racket/port with-output-to-string))
 
 (provide (all-from-out "midi/main.rkt")
          current-music-environment
@@ -33,6 +34,7 @@
          expand
          music->events
          show
+         show->string
          play)
 
 ;; ------------------------------------------------------------
@@ -145,7 +147,22 @@
 
 ;; ------------------------------------------------------------
 ;; 显示
+;;
+;; `show` returns a display-text value instead of printing as a side
+;; effect.  A custom writer makes it print like plain text both in the
+;; Racket REPL and in Emacs C-j.  `show->string` is the pure text API.
 ;; ------------------------------------------------------------
+(struct display-text (text) #:transparent
+  #:methods gen:custom-write
+  [(define (write-proc value port mode)
+     (display (display-text-text value) port))])
+
+(define (drop-final-newline str)
+  (if (and (positive? (string-length str))
+           (char=? (string-ref str (sub1 (string-length str))) #\newline))
+      (substring str 0 (sub1 (string-length str)))
+      str))
+
 (define (show-expanded-voice ev)
   (printf "~a\n" (expanded-voice-name ev))
   (for ([ti (in-list (expanded-voice-items ev))])
@@ -161,25 +178,32 @@
           (pitch-name (midi-event-pitch e))
           (midi-event-channel e)))
 
-(define (show value [env (current-music-environment)])
+(define (show->string value [env (current-music-environment)])
   (define expanded (expand value env))
-  (cond
-    [(expanded-voice? expanded)
-     (show-expanded-voice expanded)]
-    [(list? expanded)
-     (cond
-       [(null? expanded) (printf "（空）\n")]
-       [(andmap expanded-voice? expanded)
-        (for ([ev (in-list expanded)])
-          (show-expanded-voice ev)
-          (newline))]
-       [(andmap midi-event? expanded)
-        (for ([e (in-list expanded)])
-          (show-event e))]
-       [else
-        (error 'show "无法显示: ~a" expanded)])]
-    [else
-     (error 'show "无法显示: ~a" expanded)]))
+  (define text
+    (with-output-to-string
+      (lambda ()
+        (cond
+          [(expanded-voice? expanded)
+           (show-expanded-voice expanded)]
+          [(list? expanded)
+           (cond
+             [(null? expanded) (printf "（空）\n")]
+             [(andmap expanded-voice? expanded)
+              (for ([ev (in-list expanded)])
+                (show-expanded-voice ev)
+                (newline))]
+             [(andmap midi-event? expanded)
+              (for ([e (in-list expanded)])
+                (show-event e))]
+             [else
+              (error 'show "无法显示: ~a" expanded)])]
+          [else
+           (error 'show "无法显示: ~a" expanded)]))))
+  (drop-final-newline text))
+
+(define (show value [env (current-music-environment)])
+  (display-text (show->string value env)))
 
 ;; ------------------------------------------------------------
 ;; 播放
