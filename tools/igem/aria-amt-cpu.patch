@@ -1,0 +1,88 @@
+diff --git a/amt/inference/model.py b/amt/inference/model.py
+index 6b0d6b5..d96202d 100644
+--- a/amt/inference/model.py
++++ b/amt/inference/model.py
+@@ -406,14 +406,14 @@ class TextDecoder(nn.Module):
+                 n_heads=self.n_head,
+                 head_dim=self.n_state // self.n_head,
+                 dtype=dtype,
+-            ).cuda()
++            ).cpu()
+             b.cross_attn.kv_cache = KVCache(
+                 max_batch_size=batch_size,
+                 max_seq_length=max_audio_len,
+                 n_heads=self.n_head,
+                 head_dim=self.n_state // self.n_head,
+                 dtype=dtype,
+-            ).cuda()
++            ).cpu()
+
+
+ class AmtEncoderDecoder(nn.Module):
+diff --git a/amt/inference/transcribe.py b/amt/inference/transcribe.py
+index fd000b8..83d3b78 100644
+--- a/amt/inference/transcribe.py
++++ b/amt/inference/transcribe.py
+@@ -69,7 +69,7 @@ def _setup_logger(name: str | None = None):
+ @torch.jit.script
+ def get_static_mask():
+     # The values are hardcoded here for the pytorch jit - manually update
+-    col_indices = torch.arange(3419, device="cuda").unsqueeze(0)
++    col_indices = torch.arange(3419, device="cpu").unsqueeze(0)
+     mask_a = col_indices >= 392
+     mask_b = col_indices <= 3418
+     return col_indices, mask_a & mask_b
+@@ -137,13 +137,10 @@ def update_seq_end_idxs_(
+ def optional_bf16_autocast(func):
+     @wraps(func)
+     def wrapper(*args, **kwargs):
+-        if is_bf16_supported():
++        if torch.cuda.is_available() and is_bf16_supported():
+             with torch.autocast("cuda", dtype=torch.bfloat16):
+                 return func(*args, **kwargs)
+-        else:
+-            # TODO: We are using float instead of float16 due to strange bug
+-            with torch.autocast("cuda", dtype=torch.float):
+-                return func(*args, **kwargs)
++        return func(*args, **kwargs)
+
+     return wrapper
+
+@@ -217,24 +214,24 @@ def process_segments(
+     logger: logging.Logger,
+ ):
+     log_mels = audio_transform.log_mel(
+-        torch.stack([audio_seg.cuda() for (audio_seg, prefix), _ in tasks])
++        torch.stack([audio_seg.to(model.device) for (audio_seg, prefix), _ in tasks])
+     )
+     audio_features = model.encoder(xa=log_mels)
+
+     raw_prefixes = [prefix for (audio_seg, prefix), _ in tasks]
+     prefix_lens = torch.tensor(
+         [len(prefix) for prefix in raw_prefixes], dtype=torch.int
+-    ).cuda()
++    ).to(model.device)
+     min_prefix_len = min(prefix_lens).item()
+     prefixes = [
+         tokenizer.trunc_seq(prefix, MAX_BLOCK_LEN) for prefix in raw_prefixes
+     ]
+     seq = torch.stack(
+         [torch.tensor(tokenizer.encode(prefix)) for prefix in prefixes]
+-    ).cuda()
++    ).to(model.device)
+     eos_idxs = torch.tensor(
+         [MAX_BLOCK_LEN for _ in prefixes], dtype=torch.int
+-    ).cuda()
++    ).to(model.device)
+
+     for idx in (
+         pbar := tqdm(
+@@ -340,7 +337,7 @@ def gpu_manager(
+             fullgraph=True,
+         )
+
+-    audio_transform = AudioTransform().cuda()
++    audio_transform = AudioTransform().to(model.device)
+     tokenizer = AmtTokenizer()
+
+     try:

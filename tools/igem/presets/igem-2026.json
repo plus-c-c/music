@@ -1,0 +1,44 @@
+{
+  "description": "iGEM 配乐 2026 主循环选择；本次每首只验证一个候选",
+  "track_order": [
+    "开头",
+    "NEST开始后",
+    "2",
+    "3",
+    "结尾"
+  ],
+  "target_dbfs": -2.0,
+  "crossfade_ms": 150,
+  "tracks": {
+    "开头": {
+      "start": 31.277,
+      "end": 50.48,
+      "bars": 8,
+      "fade_ms": 150
+    },
+    "NEST开始后": {
+      "start": 44.072,
+      "end": 56.866,
+      "bars": 8,
+      "fade_ms": 100
+    },
+    "2": {
+      "start": 43.886,
+      "end": 64.459,
+      "bars": 8,
+      "fade_ms": 120
+    },
+    "3": {
+      "start": 61.974,
+      "end": 76.115,
+      "bars": 8,
+      "fade_ms": 150
+    },
+    "结尾": {
+      "start": 54.846,
+      "end": 74.048,
+      "bars": 8,
+      "fade_ms": 150
+    }
+  }
+}

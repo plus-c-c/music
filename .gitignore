@@ -22,3 +22,8 @@ sounds/ardour-presets/*.fxp
 sounds/samples/*.wav
 sounds/samples/*.mp3
 sounds/samples/*.flac
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/

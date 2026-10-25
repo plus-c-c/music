@@ -1,0 +1,208 @@
+# iGEM 配乐工作流
+
+这套脚本固化当前的 iGEM 配乐处理流程：
+
+1. 在远程 `iGEMServer` 上并行运行 Aria-AMT；
+2. 测量 MP3 和 MIDI 渲染音频的峰值，生成统一音量参数；
+3. 从音频节拍与和声接缝检测循环候选；
+4. 按 `起始 → 循环 → 循环 → 结束` 渲染无爆音预览；
+5. 按指定顺序播放预览、归一化 MIDI/MP3 或原始 MP3。
+
+## 依赖
+
+本地：
+
+- Python 3.10+
+- `numpy`、`librosa`、`soundfile`
+- `ffmpeg`、`ffplay`、`fluidsynth`
+- SoundFont，默认 `/usr/share/soundfonts/FluidR3_GM.sf2`
+- `ssh`、`scp`、`tar`
+
+安装 Python 依赖：
+
+```bash
+python3 -m pip install -r tools/igem/requirements.txt
+```
+
+远程 Aria-AMT 需要：
+
+- Aria-AMT 源码，当前验证版本为提交 `a1ab73f`；
+- 应用 [aria-amt-cpu.patch](aria-amt-cpu.patch)；
+- 包含 `torch`、`torchaudio`、`ariautils`、`librosa` 等的 Python 环境；
+- `checkpoints/piano-medium-double-1.0.safetensors`。
+
+远程 CPU 补丁的核心改动：
+
+```bash
+cd /path/to/aria-amt
+git checkout a1ab73f
+git apply /path/to/tools/igem/aria-amt-cpu.patch
+```
+
+如果远程环境尚无模型权重：
+
+```bash
+wget -O checkpoints/piano-medium-double-1.0.safetensors \
+  'https://huggingface.co/datasets/loubb/aria-midi/resolve/main/piano-medium-double-1.0.safetensors?download=true'
+```
+
+## 文件
+
+- `igem_music.py`：音量、循环检测、循环渲染、播放。
+- `transcribe.sh`：上传 MP3 到远程，多进程并行转录，下载 MIDI。
+- `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
+- `aria-amt-cpu.patch`：Aria-AMT CPU 补丁。
+- `presets/igem-2026.json`：本次五首曲子的主循环选择。
+- `presets/igem-2026-candidates.json`：`detect` 生成的候选列表，供替换主候选时参考。
+- `requirements.txt`：本地 Python 依赖。
+
+## 1. 远程转录
+
+```bash
+cd /home/cjc/Repository/music
+tools/igem/transcribe.sh
+```
+
+默认：
+
+- 源目录：`/home/cjc/Downloads/iGEM 配乐`
+- 本地 MIDI：`.../aria-amt-midi`
+- 远程：`igem`，Aria-AMT 根目录 `/home/igem/projects/aria-amt`
+- 5 个后台 worker，每个 3 个线程
+
+常用参数：
+
+```bash
+tools/igem/transcribe.sh \
+  --audio-dir "/home/cjc/Downloads/iGEM 配乐" \
+  --midi-dir "/home/cjc/Downloads/iGEM 配乐/aria-amt-midi" \
+  --threads 3 \
+  --jobs 5 \
+  --force
+```
+
+不加 `--force` 时，远程已存在同名 MIDI 的曲目会跳过。
+
+## 2. 统一峰值音量
+
+```bash
+python3 tools/igem/igem_music.py normalize
+```
+
+输出 `loop-preview/gains.json`，其中包含：
+
+- MP3 的 `mp3_gain`（FFmpeg 线性音量）；
+- MIDI 的 `midi_gain`（FluidSynth `-g`）；
+- 测量用的 MIDI 渲染 WAV。
+
+默认目标峰值是 `-2.0 dBFS`。当前结果：
+
+| 曲目 | MP3 gain | MIDI gain |
+|---|---:|---:|
+| 开头 | 1.0000 | 5.7544 |
+| NEST开始后 | 1.3335 | 2.6607 |
+| 2 | 1.6596 | 1.9724 |
+| 3 | 0.8318 | 4.7863 |
+| 结尾 | 0.7586 | 1.5849 |
+
+## 3. 检测循环候选
+
+```bash
+python3 tools/igem/igem_music.py detect
+```
+
+默认输出 `loop-preview/candidates.json`；仓库内保留了本次的
+`presets/igem-2026-candidates.json`。候选按以下指标评分：
+
+- 循环起点/终点的和声相似度；
+- 边界能量跳变；
+- 边界 onset 强度；
+- 与曲目中间位置的距离。
+
+默认搜索 4 小节和 8 小节候选，仅在曲目中段选择。当前预设文件是：
+
+```text
+tools/igem/presets/igem-2026.json
+```
+
+每首本次只选用一个主候选；其他候选可以手动替换到该文件。
+
+## 4. 渲染循环预览
+
+```bash
+python3 tools/igem/igem_music.py render
+```
+
+输出：
+
+```text
+/home/cjc/Downloads/iGEM 配乐/loop-preview/<曲名>_loop.wav
+/home/cjc/Downloads/iGEM 配乐/loop-preview/markers.json
+```
+
+渲染结构：
+
+```text
+原曲 0 → 循环起点
+循环段 1
+循环段 2
+循环终点 → 原曲结束
+```
+
+接缝处理：
+
+- 循环尾部与下一次循环头部使用**等功率交叉淡化**；
+- 起点段和尾段沿用原音频连续位置；
+- 默认 150 ms，可按曲目在预设中调整；
+- 输出统一峰值 `-2.0 dBFS`。
+
+当前预设：
+
+| 曲目 | 循环开始 | 循环结束 | 长度 | fade |
+|---|---:|---:|---:|---:|
+| 开头 | 31.277s | 50.480s | 19.203s | 150 ms |
+| NEST开始后 | 44.072s | 56.866s | 12.794s | 100 ms |
+| 2 | 43.886s | 64.459s | 20.573s | 120 ms |
+| 3 | 61.974s | 76.115s | 14.141s | 150 ms |
+| 结尾 | 54.846s | 74.048s | 19.202s | 150 ms |
+
+## 5. 播放
+
+播放循环预览：
+
+```bash
+python3 tools/igem/igem_music.py play --mode loops
+```
+
+后台播放：
+
+```bash
+python3 tools/igem/igem_music.py play --mode loops --background
+```
+
+其他模式：
+
+```bash
+# MIDI 与 MP3 交替：MIDI 开头 → MP3 开头 → MIDI NEST → ...
+python3 tools/igem/igem_music.py play --mode normalized
+
+# 只播原始 MP3
+python3 tools/igem/igem_music.py play --mode originals
+
+# 只播 MIDI，使用 gains.json 中的 MIDI gain
+python3 tools/igem/igem_music.py play --mode midi
+```
+
+`--list` 只打印将要执行的命令，不发声：
+
+```bash
+python3 tools/igem/igem_music.py play --mode normalized --list
+```
+
+播放脚本和日志会写入 `loop-preview/play-<mode>.sh` 与 `.log`。
+
+## 说明
+
+Aria-AMT 是钢琴转录模型。完整混音会主要保留模型识别出的钢琴/键盘部分，不等同于完整编曲分轨。
+
+循环候选的“小节”按 4/4 处理；如果原曲存在变速、弱起或不规则拍号，预设中的时间点应人工复核。
