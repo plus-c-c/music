@@ -124,6 +124,6 @@ index 2638636..88dd424 100644
 +        tail = np.asarray(wav[start:], dtype=np.float32)
 +        tail = np.pad(tail, (0, chunk_samples - len(tail)))
 +        yield torch.from_numpy(tail)
- 
- 
+
+
  def get_paired_wav_mid_segments(
