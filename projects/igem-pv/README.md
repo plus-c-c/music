@@ -7,6 +7,7 @@
 - [工作流与脚本](docs/workflow.md)
 - [当前输出清单](docs/outputs.md)
 - [MIDI 优化流程](docs/midi-optimization.md)
+- [服务器 GPU](docs/gpu.md)
 - [当前响度表快照](docs/current-loudness-report.md)
 
 这套脚本固化当前的 iGEM 配乐处理流程：
@@ -68,6 +69,8 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `prep_piano_stems_remote.sh`：在 iGEM 服务器上运行 Demucs 并下载钢琴 stem。
 - `optimize_midi.py`：量化、清理短音/低力度、同音高重叠和踏板。
 - `transcribe.sh`：上传音频到远程，多进程并行转录，下载 MIDI。支持 `--audio-ext wav`。
+- `transcribe_gpu.sh`：使用 AMD ROCm GPU 运行 Aria-AMT。
+- `whisper_gpu.py`：使用 PyTorch Whisper 在 AMD GPU 上转写音频。
 - `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
 - `aria-amt-cpu.patch`：Aria-AMT CPU 补丁。
 - `presets/igem-2026.json`：本次五首曲子的主循环选择。
@@ -77,7 +80,9 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `presets/presentation-voice-loop-2026.json`：人声循环时长、背景增益、循环淡化和混合限幅配置。
 - `requirements.txt`：本地 Python 依赖。
 - `requirements-demucs.txt`：Demucs CPU 环境依赖。
-- `requirements-demucs-rocm.txt`：iGEM 服务器 AMD ROCm 环境依赖。
+- `requirements-demucs-rocm.txt`：iGEM 服务器 AMD ROCm Demucs 环境依赖。
+- `requirements-whisper-rocm.txt`：AMD ROCm Whisper 环境依赖。
+- `aria-amt-gpu-audio.patch`：Aria-AMT GPU 源码的 torchaudio 2.11 兼容补丁。
 
 ## 1. 远程转录
 
