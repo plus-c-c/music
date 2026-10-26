@@ -22,6 +22,7 @@ REMOTE_ROOT="${IGEM_REMOTE_ROOT:-/home/igem/projects/aria-amt}"
 REMOTE_PY="${IGEM_REMOTE_PY:-/home/igem/.local/miniconda3/envs/aria-amt/bin/python}"
 AUDIO_DIR="${IGEM_AUDIO_DIR:-/home/cjc/Downloads/iGEM 配乐}"
 MIDI_DIR="${IGEM_MIDI_DIR:-${AUDIO_DIR}/aria-amt-midi}"
+AUDIO_EXT="${IGEM_AUDIO_EXT:-mp3}"
 REMOTE_INPUT="${IGEM_REMOTE_INPUT:-${REMOTE_ROOT}/input/iGEM}"
 REMOTE_OUTPUT="${IGEM_REMOTE_OUTPUT:-${REMOTE_ROOT}/output/iGEM}"
 CHECKPOINT="${IGEM_CHECKPOINT:-checkpoints/piano-medium-double-1.0.safetensors}"
@@ -34,8 +35,10 @@ usage() {
 Usage: $(basename "$0") [options]
 
 Options:
-  --audio-dir DIR       local MP3 directory (default: $AUDIO_DIR)
+  --audio-dir DIR       local audio directory (default: $AUDIO_DIR)
+  --audio-ext EXT       source extension without dot (default: $AUDIO_EXT)
   --midi-dir DIR        local MIDI output directory (default: $MIDI_DIR)
+  --remote-output DIR   remote MIDI output directory (default: $REMOTE_OUTPUT)
   --remote HOST         SSH host (default: $REMOTE)
   --remote-root DIR     remote Aria-AMT checkout (default: $REMOTE_ROOT)
   --remote-python PATH  remote Python executable (default: $REMOTE_PY)
@@ -52,7 +55,9 @@ EOF
 while (($#)); do
   case "$1" in
     --audio-dir) AUDIO_DIR="$2"; shift 2 ;;
+    --audio-ext) AUDIO_EXT="$2"; shift 2 ;;
     --midi-dir) MIDI_DIR="$2"; shift 2 ;;
+    --remote-output) REMOTE_OUTPUT="$2"; shift 2 ;;
     --remote) REMOTE="$2"; shift 2 ;;
     --remote-root) REMOTE_ROOT="$2"; shift 2 ;;
     --remote-python) REMOTE_PY="$2"; shift 2 ;;
@@ -73,15 +78,15 @@ command -v tar >/dev/null || { echo "tar is required" >&2; exit 1; }
   echo "missing $HERE/remote_run_cpu.py" >&2; exit 1
 }
 
-mapfile -t MP3S < <(find "$AUDIO_DIR" -maxdepth 1 -type f -iname '*.mp3' -print | sort)
-[ "${#MP3S[@]}" -gt 0 ] || { echo "no MP3 files in $AUDIO_DIR" >&2; exit 1; }
+mapfile -t AUDIO_FILES < <(find "$AUDIO_DIR" -maxdepth 1 -type f -iname "*.${AUDIO_EXT}" -print | sort)
+[ "${#AUDIO_FILES[@]}" -gt 0 ] || { echo "no .$AUDIO_EXT files in $AUDIO_DIR" >&2; exit 1; }
 
 echo "remote:      $REMOTE"
 echo "audio dir:   $AUDIO_DIR"
 echo "midi dir:    $MIDI_DIR"
 echo "remote root: $REMOTE_ROOT"
 echo "workers:     $JOBS x $THREADS threads"
-echo "tracks:      ${#MP3S[@]}"
+echo "tracks:      ${#AUDIO_FILES[@]} (.$AUDIO_EXT)"
 
 ssh -o BatchMode=yes "$REMOTE" "
   set -e
@@ -96,7 +101,7 @@ ssh -o BatchMode=yes "$REMOTE" "
 scp -q "$HERE/remote_run_cpu.py" "$REMOTE:$REMOTE_ROOT/run_cpu.py"
 (
   cd "$AUDIO_DIR"
-  tar -cf - -- *.mp3
+  tar -cf - -- *.$AUDIO_EXT
 ) | ssh -o BatchMode=yes "$REMOTE" "
   set -e
   rm -rf '$REMOTE_INPUT'
@@ -113,9 +118,10 @@ if [ "$FORCE" = "1" ]; then
   rm -f "$OUTPUT"/*.mid "$OUTPUT"/*.log "$OUTPUT"/*.rc 2>/dev/null || true
 fi
 running=0
-for f in "$INPUT"/*.mp3; do
+for f in "$INPUT"/*; do
   [ -f "$f" ] || continue
-  b="$(basename "$f" .mp3)"
+  b="$(basename "$f")"
+  b="${b%.*}"
   if [ "$FORCE" != "1" ] && [ -f "$OUTPUT/$b.mid" ]; then
     echo "SKIP $(date +%H:%M:%S) $b (existing; use --force to overwrite)"
     continue

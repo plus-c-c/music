@@ -37,6 +37,13 @@
 - `presentation-loudness-report.md`
 - `presentation-loudness-report.json`
 
+## MIDI 优化链路
+
+- `/home/cjc/Downloads/iGEM 配乐/stems/piano/*.wav`
+- `/home/cjc/Downloads/iGEM 配乐/aria-amt-midi-piano/*.mid`
+- `/home/cjc/Downloads/iGEM 配乐/aria-amt-midi-piano-optimized/*.mid`
+- `/home/cjc/Downloads/iGEM 配乐/aria-amt-midi-piano-optimized/optimize-report.json`
+
 ## 源音频
 
 - `/home/cjc/Downloads/iGEM 配乐/开头.mp3`

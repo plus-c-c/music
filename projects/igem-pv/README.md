@@ -6,6 +6,7 @@
 - [人声与背景响度](docs/loudness.md)
 - [工作流与脚本](docs/workflow.md)
 - [当前输出清单](docs/outputs.md)
+- [MIDI 优化流程](docs/midi-optimization.md)
 - [当前响度表快照](docs/current-loudness-report.md)
 
 这套脚本固化当前的 iGEM 配乐处理流程：
@@ -62,8 +63,10 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `presentation_voice_loop.py`：把测试人声循环到 15 分钟，生成人声/背景/混合三个音量对照版本。
 - `render-presentation.sh`：一键重建背景和 15 分钟人声循环对照版。
 - `play-full-mix.sh`：播放完整 15 分钟背景 + 人声混合版。
-- `presentation_isolate.py`：单独导出硬件段背景和人声参考，便于 A/B。
-- `transcribe.sh`：上传 MP3 到远程，多进程并行转录，下载 MIDI。
+- `presentation_isolate.py`：导出硬件背景、人声参考，以及二者同时混合版。
+- `prep_piano_stems.sh`：用 Demucs 批量提取钢琴 stem。
+- `optimize_midi.py`：量化、清理短音/低力度、同音高重叠和踏板。
+- `transcribe.sh`：上传音频到远程，多进程并行转录，下载 MIDI。支持 `--audio-ext wav`。
 - `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
 - `aria-amt-cpu.patch`：Aria-AMT CPU 补丁。
 - `presets/igem-2026.json`：本次五首曲子的主循环选择。
