@@ -10,11 +10,33 @@
 
 Aria-AMT 是钢琴转录模型，完整混音会引入鼓、贝斯、人声和合成器误判。
 
+推荐在 iGEM 服务器上运行 Demucs：
+
 ```bash
 cd /home/cjc/Repository/music
-projects/igem-pv/prep_piano_stems.sh \
+projects/igem-pv/prep_piano_stems_remote.sh \
   --audio-dir "/home/cjc/Downloads/iGEM 配乐" \
   --tracks 开头,NEST开始后,2,3,结尾
+```
+
+远程环境：
+
+```text
+/home/igem/.local/miniconda3/envs/demucs/bin/python
+```
+
+远程 Demucs 环境已安装：
+
+```bash
+python3 -m pip install torch==2.5.1 torchaudio==2.5.1 \
+  --index-url https://download.pytorch.org/whl/cpu
+python3 -m pip install -r requirements-demucs.txt
+```
+
+本地运行也支持，但需要本机安装 Demucs：
+
+```bash
+projects/igem-pv/prep_piano_stems.sh
 ```
 
 默认使用：

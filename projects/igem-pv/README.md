@@ -64,7 +64,8 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `render-presentation.sh`：一键重建背景和 15 分钟人声循环对照版。
 - `play-full-mix.sh`：播放完整 15 分钟背景 + 人声混合版。
 - `presentation_isolate.py`：导出硬件背景、人声参考，以及二者同时混合版。
-- `prep_piano_stems.sh`：用 Demucs 批量提取钢琴 stem。
+- `prep_piano_stems.sh`：本地 Demucs 批量提取钢琴 stem。
+- `prep_piano_stems_remote.sh`：在 iGEM 服务器上运行 Demucs 并下载钢琴 stem。
 - `optimize_midi.py`：量化、清理短音/低力度、同音高重叠和踏板。
 - `transcribe.sh`：上传音频到远程，多进程并行转录，下载 MIDI。支持 `--audio-ext wav`。
 - `remote_run_cpu.py`：远程单曲 CPU 转录器，由 `transcribe.sh` 自动上传。
@@ -75,6 +76,7 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `presets/presentation-background-2026.json`：严格循环背景版的重复次数、空隙和电平配置。
 - `presets/presentation-voice-loop-2026.json`：人声循环时长、背景增益、循环淡化和混合限幅配置。
 - `requirements.txt`：本地 Python 依赖。
+- `requirements-demucs.txt`：远程/本地 Demucs CPU 环境依赖。
 
 ## 1. 远程转录
 
