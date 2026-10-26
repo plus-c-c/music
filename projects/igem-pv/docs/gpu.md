@@ -122,5 +122,15 @@ whisper_gpu.py
 /home/igem/asr/whisper-models/
 ```
 
-已验证 `tiny` 模型在 AMD GPU 上运行，`device=cuda:0`，10 秒音频约 1 秒完成；
-`openai-whisper` 的 `large-v3` 首次使用会自动下载到上述缓存目录。
+已验证：
+
+- `tiny`：AMD GPU，10 秒音频约 1 秒；
+- `large-v3`：已下载 2.9 GB，加载到 `cuda:0` 成功；
+- `large-v3` 转写 10 秒音频约 2.27 秒，JSON/SRT/TXT 均生成。
+
+模型文件：
+
+```text
+/home/igem/asr/whisper-models/tiny.pt
+/home/igem/asr/whisper-models/large-v3.pt
+```
