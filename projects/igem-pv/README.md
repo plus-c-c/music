@@ -76,7 +76,8 @@ wget -O checkpoints/piano-medium-double-1.0.safetensors \
 - `presets/presentation-background-2026.json`：严格循环背景版的重复次数、空隙和电平配置。
 - `presets/presentation-voice-loop-2026.json`：人声循环时长、背景增益、循环淡化和混合限幅配置。
 - `requirements.txt`：本地 Python 依赖。
-- `requirements-demucs.txt`：远程/本地 Demucs CPU 环境依赖。
+- `requirements-demucs.txt`：Demucs CPU 环境依赖。
+- `requirements-demucs-rocm.txt`：iGEM 服务器 AMD ROCm 环境依赖。
 
 ## 1. 远程转录
 

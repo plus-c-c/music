@@ -4,12 +4,13 @@ set -euo pipefail
 
 REMOTE="${IGEM_REMOTE:-igem}"
 REMOTE_ROOT="${IGEM_DEMUCS_ROOT:-/home/igem/projects/demucs-work}"
-REMOTE_PY="${IGEM_DEMUCS_PY:-/home/igem/.local/miniconda3/envs/demucs/bin/python}"
+REMOTE_PY="${IGEM_DEMUCS_PY:-/home/igem/.local/miniconda3/envs/demucs-rocm/bin/python}"
 AUDIO_DIR="${IGEM_AUDIO_DIR:-/home/cjc/Downloads/iGEM 配乐}"
 OUT_DIR="${IGEM_STEM_DIR:-${AUDIO_DIR}/stems/piano}"
 MODEL="${IGEM_DEMUCS_MODEL:-htdemucs_6s}"
 EXT="${IGEM_AUDIO_EXT:-mp3}"
 THREADS="${IGEM_DEMUCS_THREADS:-8}"
+DEVICE="${IGEM_DEMUCS_DEVICE:-cuda}"
 FORCE=0
 TRACKS=""
 
@@ -26,6 +27,7 @@ Options:
   --model NAME          Demucs model (default: $MODEL)
   --extension EXT       source extension without dot (default: $EXT)
   --threads N           CPU threads (default: $THREADS)
+  --device DEVICE       cuda (ROCm) or cpu (default: $DEVICE)
   --tracks LIST         comma-separated basenames; default: all
   --force               overwrite existing stems
   -h, --help            show help
@@ -42,6 +44,7 @@ while (($#)); do
     --model) MODEL="$2"; shift 2 ;;
     --extension) EXT="$2"; shift 2 ;;
     --threads) THREADS="$2"; shift 2 ;;
+    --device) DEVICE="$2"; shift 2 ;;
     --tracks) TRACKS="$2"; shift 2 ;;
     --force) FORCE=1; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -84,7 +87,7 @@ ssh -o BatchMode=yes "$REMOTE" "
 "
 
 ssh -o BatchMode=yes "$REMOTE" \
-  "cd '$REMOTE_ROOT' && REMOTE_PY='$REMOTE_PY' MODEL='$MODEL' EXT='$EXT' THREADS='$THREADS' FORCE='$FORCE' bash -s" <<'REMOTE_SCRIPT'
+  "cd '$REMOTE_ROOT' && REMOTE_PY='$REMOTE_PY' MODEL='$MODEL' EXT='$EXT' THREADS='$THREADS' DEVICE='$DEVICE' FORCE='$FORCE' bash -s" <<'REMOTE_SCRIPT'
 set -euo pipefail
 for f in input/*."$EXT"; do
   [ -f "$f" ] || continue
@@ -94,9 +97,10 @@ for f in input/*."$EXT"; do
     echo "skip existing"
     continue
   fi
-  OMP_NUM_THREADS="$THREADS" MKL_NUM_THREADS="$THREADS" \
+  HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+    OMP_NUM_THREADS="$THREADS" MKL_NUM_THREADS="$THREADS" \
     "$REMOTE_PY" -m demucs.separate \
-      -n "$MODEL" --device cpu -o output "$f"
+      -n "$MODEL" --device "$DEVICE" -o output "$f"
   src="output/$MODEL/$b/piano.wav"
   [ -f "$src" ] || { echo "missing Demucs piano stem: $src" >&2; exit 1; }
   cp -f "$src" "piano/$b.wav"

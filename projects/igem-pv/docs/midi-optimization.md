@@ -19,10 +19,28 @@ projects/igem-pv/prep_piano_stems_remote.sh \
   --tracks 开头,NEST开始后,2,3,结尾
 ```
 
-远程环境：
+远程 GPU 环境：
+
+```text
+/home/igem/.local/miniconda3/envs/demucs-rocm/bin/python
+```
+
+服务器 GPU：`AMD Radeon RX 9070 XT`，架构 `gfx1201`，ROCm 7.1。
+PyTorch ROCm 仍通过 `torch.cuda` API 暴露设备，因此 Demucs 使用
+`--device cuda`；实际执行在 AMD GPU 上。
+
+CPU 回退环境：
 
 ```text
 /home/igem/.local/miniconda3/envs/demucs/bin/python
+```
+
+`prep_piano_stems_remote.sh` 默认使用 GPU 环境。需要 CPU 时：
+
+```bash
+projects/igem-pv/prep_piano_stems_remote.sh \
+  --device cpu \
+  --remote-python /home/igem/.local/miniconda3/envs/demucs/bin/python
 ```
 
 远程 Demucs 环境已安装：
